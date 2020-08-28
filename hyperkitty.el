@@ -35,7 +35,7 @@
    :parser 'json-read
    :success
    (cl-function (lambda (&key response &allow-other-keys)
-				  (funcall success-func response)))))
+                  (funcall success-func response)))))
 
 (defun get-response-entries (response)
   (assoc-default 'results (request-response-data response)))
@@ -45,31 +45,43 @@
   "Print each element MailingLists from the response."
   (with-current-buffer "*scratch*"
     (insert (format "URL: %s, Status: %s, Data: %s"
-					(request-response-url response)
-					(request-response-status-code response)
-					(mapcar 'print-mailinglist (get-response-entries response))))))
+                    (request-response-url response)
+                    (request-response-status-code response)
+                    (mapcar 'print-mailinglist (get-response-entries response))))))
 
 
 (defun print-mailinglist (mlist)
   "Get an association lists and prints the display name,
 name and description of the list."
   (format "\nName: %s \nAddress: %s \nDescription: %s \n"
-		  (assoc-default 'display_name mlist)
-		  (assoc-default 'name mlist)
-		  (assoc-default 'description mlist)))
+          (assoc-default 'display_name mlist)
+          (assoc-default 'name mlist)
+          (assoc-default 'description mlist)))
 
 
 (defun get-threads-response (response)
+  "Given a HTTP response, return a list that tablulated-list-mode.
+
+It expects data in the form of:
+(<thread-url> [(<subject> <date>)
+               (<subject2> <date2>)
+               ...])
+
+It also expects the list to be paginated with simple
+PageNumberPagination from Django Rest Framework.
+"
   (mapcar (lambda (arg) (list (assoc-default 'url arg)
-							  (vector (assoc-default 'subject arg)
-									  (assoc-default 'date_active arg))))
-		  (get-response-entries response)))
+                              (vector (assoc-default 'subject arg)
+									  (number-to-string (assoc-default 'replies_count arg))
+                                      (assoc-default 'date_active arg))))
+          (get-response-entries response)))
 
 
 (defun print-thread (thread)
   (format "Subject: %s \nReplies: %s"
-		  (assoc-default 'subject thread)
-		  (assoc-default 'replies_count thread)))
+          (assoc-default 'subject thread)
+          (assoc-default 'replies_count thread)
+          (assoc-default 'replies_count thread)))
 
 
 (defun choose-mailinglist (response)
@@ -77,27 +89,44 @@ name and description of the list."
   (ido-completing-read
    "Select from list: "
    (mapcar
-	(lambda (arg) (assoc-default 'name arg))
-	(get-response-entries response))))
+    (lambda (arg) (assoc-default 'name arg))
+    (get-response-entries response))))
 
 
 (defun choose-mailinglist-and-get-threads (response)
   "Choose mailinglist and get their threads."
   (let* ((mlist (choose-mailinglist response))
-		 (threads-url (hyperkitty-threads-url hyperkitty-base-url mlist)))
-	(get-json threads-url (apply-partially 'print-threads-table mlist))))
+         (threads-url (hyperkitty-threads-url hyperkitty-base-url mlist)))
+    (get-json threads-url (apply-partially 'print-threads-table mlist))))
 
 
 (defun get-thread-emails ()
   "Get Emails for the thread of current line."
   (interactive)
-  (get-json (tabulated-list-get-id) 'print-email-response)
-  )
+  (get-json
+   (hyperkitty-thread-emails-url (tabulated-list-get-id))
+   (apply-partially 'print-emails-response (elt (tabulated-list-get-entry) 0))))
 
 
-(defun print-email-response (response)
-  (pop-to-buffer "Thread Emails")
-  (insert (get-response-entries response)))
+(defun print-emails-response (subject response)
+  (pop-to-buffer (format "*%s*" subject))
+  (erase-buffer)
+  (mapcar 'print-email (get-response-entries response))
+  (goto-char (point-min))
+  (mail-mode))
+
+
+(defun print-email (email)
+  "Fetch and print a single email to the current buffer."
+  (get-json
+   (assoc-default 'url email)
+   (lambda (response)
+     (let ((anemail (request-response-data response)))
+       (insert (format "From: %s\nSubject: %s\nDate: %s:\n\n%s\n\n"
+                       (assoc-default 'sender_name anemail)
+                       (assoc-default 'subject anemail)
+                       (assoc-default 'date anemail)
+                       (assoc-default 'content anemail)))))))
 
 
 (defvar threads-mode-map nil "Keymap for 'threads-mode-map'")
@@ -109,10 +138,10 @@ name and description of the list."
 
 (define-derived-mode threads-mode tabulated-list-mode "threads-mode"
   "Major mode for MailingList threads."
-  (setq tabulated-list-format [("Subject" 100 nil)
-                               ("Last Active Date" 15 t)])
-  (setq tabulated-list-padding 2)
-  (setq tabulated-list-sort-key (cons "Last Active Date" nil))
+  (setq tabulated-list-format [("Subject" 80 nil)
+							   ("Reply" 5 nil)
+                               ("Last Active" 15 t)])
+  (setq tabulated-list-sort-key (cons "Last Active" nil))
   (tabulated-list-init-header))
 
 
