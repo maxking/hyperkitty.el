@@ -17,6 +17,9 @@
 (defun hyperkitty-threads-url (base-url mlist)
   (concat base-url "/api/list/" mlist "/threads"))
 
+(defun hyperkitty-thread-emails-url (threads-url)
+  (concat threads-url "/emails"))
+
 
 (defun get-hk-base-url ()
   "Prompt User to get the base URL for hyperkitty."
@@ -34,6 +37,9 @@
    (cl-function (lambda (&key response &allow-other-keys)
 				  (funcall success-func response)))))
 
+(defun get-response-entries (response)
+  (assoc-default 'results (request-response-data response)))
+
 
 (defun print-mailinglist-response (response)
   "Print each element MailingLists from the response."
@@ -41,7 +47,7 @@
     (insert (format "URL: %s, Status: %s, Data: %s"
 					(request-response-url response)
 					(request-response-status-code response)
-					(mapcar 'print-mailinglist (request-response-data response))))))
+					(mapcar 'print-mailinglist (get-response-entries response))))))
 
 
 (defun print-mailinglist (mlist)
@@ -54,10 +60,10 @@ name and description of the list."
 
 
 (defun get-threads-response (response)
-  (mapcar (lambda (arg) (list (assoc-default 'thread_id arg)
+  (mapcar (lambda (arg) (list (assoc-default 'url arg)
 							  (vector (assoc-default 'subject arg)
 									  (assoc-default 'date_active arg))))
-		  (request-response-data response)))
+		  (get-response-entries response)))
 
 
 (defun print-thread (thread)
@@ -72,7 +78,7 @@ name and description of the list."
    "Select from list: "
    (mapcar
 	(lambda (arg) (assoc-default 'name arg))
-	(request-response-data response))))
+	(get-response-entries response))))
 
 
 (defun choose-mailinglist-and-get-threads (response)
@@ -80,6 +86,25 @@ name and description of the list."
   (let* ((mlist (choose-mailinglist response))
 		 (threads-url (hyperkitty-threads-url hyperkitty-base-url mlist)))
 	(get-json threads-url (apply-partially 'print-threads-table mlist))))
+
+
+(defun get-thread-emails ()
+  "Get Emails for the thread of current line."
+  (interactive)
+  (get-json (tabulated-list-get-id) 'print-email-response)
+  )
+
+
+(defun print-email-response (response)
+  (pop-to-buffer "Thread Emails")
+  (insert (get-response-entries response)))
+
+
+(defvar threads-mode-map nil "Keymap for 'threads-mode-map'")
+(progn
+  (setq threads-mode-map (make-sparse-keymap))
+  (define-key threads-mode-map (kbd "<RET>") 'get-thread-emails)
+  )
 
 
 (define-derived-mode threads-mode tabulated-list-mode "threads-mode"
@@ -92,7 +117,6 @@ name and description of the list."
 
 
 (defun print-current-line-id ()
-  (interactive)
    (message (concat "current line ID is: " (tabulated-list-get-id))))
 
 
@@ -104,7 +128,14 @@ name and description of the list."
   (tabulated-list-print t))
 
 
+
 (defun hyperkitty ()
+  "This is the primary entrypoint to hyperkitty.el
+
+It fetches the Hyperkitty API from the `hyperkitty-base-url'
+variable and let's user choose one of the mailing list and then
+opens a new buffer with a list of threads for that MailingList.
+"
   (interactive)
   (get-json
    (hyperkitty-lists-url hyperkitty-base-url)
