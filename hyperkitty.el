@@ -111,9 +111,8 @@ PageNumberPagination from Django Rest Framework.
 (defun print-emails-response (subject response)
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
-  (mapcar 'print-email (get-response-entries response))
-  (goto-char (point-min))
-  (mail-mode))
+  (mail-mode)
+  (mapcar 'print-email (get-response-entries response)))
 
 
 (defun print-email (email)
