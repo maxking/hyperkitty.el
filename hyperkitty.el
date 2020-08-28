@@ -53,9 +53,11 @@ name and description of the list."
 		  (assoc-default 'description mlist)))
 
 
-(defun print-threads-response (response)
-  (with-current-buffer "*scratch*"
-	(insert (format "%s" (mapcar 'print-thread (request-response-data response))))))
+(defun get-threads-response (response)
+  (mapcar (lambda (arg) (list (assoc-default 'thread_id arg)
+							  (vector (assoc-default 'subject arg)
+									  (assoc-default 'date_active arg))))
+		  (request-response-data response)))
 
 
 (defun print-thread (thread)
@@ -77,9 +79,33 @@ name and description of the list."
   "Choose mailinglist and get their threads."
   (let* ((mlist (choose-mailinglist response))
 		 (threads-url (hyperkitty-threads-url hyperkitty-base-url mlist)))
-	(get-json threads-url 'print-threads-response)))
+	(get-json threads-url (apply-partially 'print-threads-table mlist))))
 
 
-(get-json
- (hyperkitty-lists-url hyperkitty-base-url)
- 'choose-mailinglist-and-get-threads)
+(define-derived-mode threads-mode tabulated-list-mode "threads-mode"
+  "Major mode for MailingList threads."
+  (setq tabulated-list-format [("Subject" 100 nil)
+                               ("Last Active Date" 15 t)])
+  (setq tabulated-list-padding 2)
+  (setq tabulated-list-sort-key (cons "Last Active Date" nil))
+  (tabulated-list-init-header))
+
+
+(defun print-current-line-id ()
+  (interactive)
+   (message (concat "current line ID is: " (tabulated-list-get-id))))
+
+
+(defun print-threads-table (mlist response)
+  (interactive)
+  (pop-to-buffer (format "*%s*" mlist) nil)
+  (threads-mode)
+  (setq tabulated-list-entries (get-threads-response response))
+  (tabulated-list-print t))
+
+
+(defun hyperkitty ()
+  (interactive)
+  (get-json
+   (hyperkitty-lists-url hyperkitty-base-url)
+   'choose-mailinglist-and-get-threads))
