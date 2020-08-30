@@ -18,6 +18,10 @@ about the Email.
   (erase-buffer)
   (thread-emails-mode)
   (setq outline-regexp "From: ")
+  (insert (propertize
+		   (format "%s\n" subject)
+		   'font-lock-face 'bold
+		   'height 200))
   (mapcar 'print-email (get-response-entries response)))
 
 
