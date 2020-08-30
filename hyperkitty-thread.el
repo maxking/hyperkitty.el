@@ -28,7 +28,7 @@ threads-mode. Finally, display all the threads from the response.
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
   (threads-mode)
-  (setq tabulated-list-entries (get-threads-response response))
+  (setq tabulated-list-entries (get-threads-response-with-more-button response))
   (tabulated-list-print t))
 
 
@@ -49,5 +49,33 @@ PageNumberPagination from Django Rest Framework.
                                       (assoc-default 'date_active arg))))
           (get-response-entries response)))
 
+
+
+(defun get-threads-response-with-more-button (response)
+  "Get the list of threads from the response and add a
+[More Threads] button.
+
+This creates a new button.
+"
+  (cons
+   (list "more-threads"
+		 (vector
+		  (cons
+		   "[More Threads]"
+		   (list 'action 'button-fetch-more-threads
+				 'type 'hyperkitty-more-threads-button )) "" ""))
+   (get-threads-response response)))
+
+
+(defun button-fetch-more-threads (button)
+  "Get more threads for the current thread."
+  (message (format "Button pressed!")))
+
+
+(define-button-type 'hyperkitty-more-threads-button
+  'action 'button-fetch-more-threads
+  'follow-link t
+  'help-echo "Fetch More threads"
+  'help-args "Get more threads.")
 
 (provide 'hyperkitty-thread)
