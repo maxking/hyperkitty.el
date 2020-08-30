@@ -22,7 +22,7 @@ about the Email.
 		   (format "%s\n" subject)
 		   'font-lock-face 'bold
 		   'height 200))
-  (mapcar 'print-email (get-response-entries response)))
+  (mapcar 'print-email (reverse (get-response-entries response))))
 
 
 (defun print-email (email)
