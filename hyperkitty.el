@@ -12,23 +12,39 @@
 (setq hyperkitty-base-url  "https://lists.mailman3.org/archives")
 
 (defun hyperkitty-lists-url (base-url)
+  "Get a list of all MailingLists from API.
+
+Currently, this does not handle pagination and simply returns the
+default URL without pagination.
+"
   (concat base-url "/api/lists/"))
 
 (defun hyperkitty-threads-url (base-url mlist)
+  "Get a list of all threads for a MailingList.
+
+Currently, this does not handle pagination and simply returns the
+default URL without pagination.
+"
   (concat base-url "/api/list/" mlist "/threads"))
 
 (defun hyperkitty-thread-emails-url (threads-url)
+  "Get all emails for the given thread URL.
+
+This does not handle pagination currently.
+"
   (concat threads-url "/emails"))
 
 
-(defun get-hk-base-url ()
+(defun hyperkitty-get-base-url ()
   "Prompt User to get the base URL for hyperkitty."
   (interactive)
   (read-string "Enter Hyperkitty URL:"))
 
 
 (defun get-json (url success-func)
-  "Download and get all MailingLists from a server."
+  "Call the given `url' and call provided call function on success.
+
+We currently don't have a good error handling."
   (interactive)
   (request
    url
@@ -42,7 +58,13 @@
 
 
 (defun print-mailinglist-response (response)
-  "Print each element MailingLists from the response."
+  "Print each element MailingLists from the response.
+
+Handler for HTTP response for all the lists API. It simply prints
+the list of MailingList.
+
+TODO: This should accept a handler which should handle each entry
+of the response."
   (with-current-buffer "*scratch*"
     (insert (format "URL: %s, Status: %s, Data: %s"
                     (request-response-url response)
@@ -77,15 +99,8 @@ PageNumberPagination from Django Rest Framework.
           (get-response-entries response)))
 
 
-(defun print-thread (thread)
-  (format "Subject: %s \nReplies: %s"
-          (assoc-default 'subject thread)
-          (assoc-default 'replies_count thread)
-          (assoc-default 'replies_count thread)))
-
-
 (defun choose-mailinglist (response)
-  "Ask user to choose a Mailinglist from the response."
+  "Ask user to choose a Mailinglist from the /lists API."
   (ido-completing-read
    "Select from list: "
    (mapcar
@@ -109,6 +124,13 @@ PageNumberPagination from Django Rest Framework.
 
 
 (defun print-emails-response (subject response)
+  "Print all the Emails of a thread in a new Buffer.
+
+Create a new buffer, named after the subject of the email and
+print all the emails in that new buffer. Each Email's content is
+fetched individual since the entries only contain the metadata
+about the Email.
+"
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
   (mail-mode)
@@ -116,7 +138,11 @@ PageNumberPagination from Django Rest Framework.
 
 
 (defun print-email (email)
-  "Fetch and print a single email to the current buffer."
+  "Fetch and print a single email to the current buffer.
+
+Given a metadata object for Email, fetch the actual contents of
+the Email and print it to the current buffer.
+"
   (get-json
    (assoc-default 'url email)
    (lambda (response)
@@ -128,6 +154,8 @@ PageNumberPagination from Django Rest Framework.
                        (assoc-default 'content anemail)))))))
 
 
+
+;; Keyboard map for threads-mode.
 (defvar threads-mode-map nil "Keymap for 'threads-mode-map'")
 (progn
   (setq threads-mode-map (make-sparse-keymap))
@@ -136,7 +164,11 @@ PageNumberPagination from Django Rest Framework.
 
 
 (define-derived-mode threads-mode tabulated-list-mode "threads-mode"
-  "Major mode for MailingList threads."
+  "Major mode for MailingList threads.
+
+It presents a list of threads in a tabular format with three
+columns, Subject, Reply and Last Active date.
+"
   (setq tabulated-list-format [("Subject" 80 nil)
 							   ("Reply" 5 nil)
                                ("Last Active" 15 t)])
@@ -144,11 +176,12 @@ PageNumberPagination from Django Rest Framework.
   (tabulated-list-init-header))
 
 
-(defun print-current-line-id ()
-   (message (concat "current line ID is: " (tabulated-list-get-id))))
-
-
 (defun print-threads-table (mlist response)
+  "Print the whole threads table for a given MailingList.
+
+Create a new buffer, named after the MailingList and switch to
+threads-mode. Finally, display all the threads from the response.
+"
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
   (threads-mode)
