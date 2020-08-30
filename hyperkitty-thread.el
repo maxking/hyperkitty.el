@@ -28,6 +28,10 @@ threads-mode. Finally, display all the threads from the response.
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
   (threads-mode)
+  (make-local-variable 'page-num)
+  (make-local-variable 'current-mlist)
+  (setq page-num 1)
+  (setq current-mlist mlist)
   (setq tabulated-list-entries (get-threads-response-with-more-button response))
   (tabulated-list-print t))
 
@@ -69,7 +73,14 @@ This creates a new button.
 
 (defun button-fetch-more-threads (button)
   "Get more threads for the current thread."
-  (message (format "Button pressed!")))
+  (setq page-num (+ page-num 1))
+  (let ((threads-url (hyperkitty-threads-url hyperkitty-base-url current-mlist page-num)))
+	(get-json threads-url 'update-threads)))
+
+
+(defun update-threads (response)
+  (setq tabulated-list-entries (append tabulated-list-entries (get-threads-response response)))
+  (tabulated-list-print t))
 
 
 (define-button-type 'hyperkitty-more-threads-button

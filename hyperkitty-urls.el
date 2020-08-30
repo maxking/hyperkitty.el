@@ -6,13 +6,16 @@ default URL without pagination.
 "
   (concat base-url "/api/lists/"))
 
-(defun hyperkitty-threads-url (base-url mlist)
+(defun hyperkitty-threads-url (base-url mlist &optional page)
   "Get a list of all threads for a MailingList.
 
 Currently, this does not handle pagination and simply returns the
 default URL without pagination.
 "
-  (concat base-url "/api/list/" mlist "/threads"))
+  (let ((thread-url (concat base-url "/api/list/" mlist "/threads")))
+	(if page
+		(concat thread-url (format "?page=%s" page))
+	  thread-url)))
 
 (defun hyperkitty-thread-emails-url (threads-url)
   "Get all emails for the given thread URL.
