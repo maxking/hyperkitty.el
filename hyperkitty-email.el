@@ -16,10 +16,9 @@ about the Email.
 "
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
-  (outline-mode)
+  (thread-emails-mode)
   (setq outline-regexp "From: ")
-  (mapcar 'print-email (get-response-entries response))
-  (thread-emails-minor-mode))
+  (mapcar 'print-email (get-response-entries response)))
 
 
 (defun print-email (email)
@@ -39,9 +38,9 @@ the Email and print it to the current buffer.
                        (assoc-default 'content anemail)))))))
 
 
-(define-minor-mode thread-emails-minor-mode
+(define-derived-mode thread-emails-mode outline-mode "thread-emails-mode"
   "Minor mode to simulate buffer local keybindings."
-  :init-value nil)
+  )
 
 
 (defun hyperkitty-outline-toggle ()
@@ -51,11 +50,11 @@ the Email and print it to the current buffer.
 	(outline-hide-entry)))
 
 
-(defvar thread-emails-minor-mode-map nil "Keymap for 'thread-emails-minor-mode'")
+(defvar thread-emails-mode-map nil "Keymap for 'thread-emails-mode'")
 (progn
-  (setq thread-emails-minor-mode-map (make-sparse-keymap))
-  (define-key thread-emails-minor-mode-map (kbd "<RET>") 'hyperkitty-outline-toggle)
-  (define-key thread-emails-minor-mode-map (kbd "TAB") 'hyperkitty-outline-toggle))
+  (setq thread-emails-mode-map (make-sparse-keymap))
+  (define-key thread-emails-mode-map (kbd "<RET>") 'hyperkitty-outline-toggle)
+  (define-key thread-emails-mode-map (kbd "TAB") 'hyperkitty-outline-toggle))
 
 
 (provide 'hyperkitty-email)
