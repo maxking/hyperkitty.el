@@ -40,7 +40,7 @@ the Email and print it to the current buffer.
 
 (define-derived-mode thread-emails-mode outline-mode "thread-emails-mode"
   "Minor mode to simulate buffer local keybindings."
-  )
+  (setq font-lock-defaults '(email-highlights)))
 
 
 (defun hyperkitty-outline-toggle ()
@@ -56,5 +56,9 @@ the Email and print it to the current buffer.
   (define-key thread-emails-mode-map (kbd "<RET>") 'hyperkitty-outline-toggle)
   (define-key thread-emails-mode-map (kbd "TAB") 'hyperkitty-outline-toggle))
 
+
+(setq email-highlights
+      '(("From:\\|Date:\\|Subject:" . font-lock-keyword-face)
+        (">.*" . font-lock-comment-face)))
 
 (provide 'hyperkitty-email)
