@@ -1,0 +1,6 @@
+* hyperkitty.el
+
+An emacs package for reading public mailing list archives hosted via
+[[https://hyperkitty.readthedocs.io][Hyperkitty]].
+
+Currently, this is a WIP and can only fetch and list emails in a new buffer.
