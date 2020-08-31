@@ -42,7 +42,8 @@ the Email and print it to the current buffer.
                        (assoc-default 'sender_name anemail)
                        (assoc-default 'subject anemail)
                        (assoc-default 'date anemail)
-                       (assoc-default 'content anemail)))))))
+                       (assoc-default 'content anemail))))
+     (outline-hide-entry))))
 
 
 (define-derived-mode thread-emails-mode outline-mode "thread-emails-mode"
