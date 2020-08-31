@@ -56,12 +56,18 @@ the Email and print it to the current buffer.
 	  (outline-show-entry)
 	(outline-hide-entry)))
 
+(defun hyperkitty-kill-current-buffer ()
+  "Kill the current buffer."
+  (interactive)
+  (kill-buffer (current-buffer)))
+
 
 (defvar thread-emails-mode-map nil "Keymap for 'thread-emails-mode'")
 (progn
   (setq thread-emails-mode-map (make-sparse-keymap))
   (define-key thread-emails-mode-map (kbd "<RET>") 'hyperkitty-outline-toggle)
-  (define-key thread-emails-mode-map (kbd "TAB") 'hyperkitty-outline-toggle))
+  (define-key thread-emails-mode-map (kbd "TAB") 'hyperkitty-outline-toggle)
+  (define-key thread-emails-mode-map (kbd "q") 'hyperkitty-kill-current-buffer))
 
 
 (setq email-highlights
