@@ -35,3 +35,14 @@ After that, add this to your emacs init file:
 #+end_src
 
 Then, you need to only start using by running ~M-x hyperkitty~.
+
+* Keybindings
+
+** Thread List view
+- ~RET~: Open the thread in a new buffer.
+- ~q~: Quit the current buffer.
+
+
+** Thread view
+- ~RET~, ~TAB~: Toggle expand and collapse the email at cursor.
+- ~q~: Quit the current buffer.
