@@ -38,16 +38,32 @@ the Email and print it to the current buffer.
    (lambda (response)
      (let ((anemail (request-response-data response))
            (inhibit-read-only t))
-       (insert
-        (format
-         "From: %s <%s>\nMessage-ID: %s\nSubject: %s\nDate: %s:\n\n%s\n\n"
-         (assoc-default 'sender_name anemail)
-         (assoc-default 'address (assoc-default 'sender anemail))
-         (assoc-default 'message_id anemail)
-         (assoc-default 'subject anemail)
-         (assoc-default 'date anemail)
-         (assoc-default 'content anemail))))
+       (insert (print-email-headers anemail))
+       (maybe-print-email-attachments anemail)
+       (insert (format "\n%s\n\n" (assoc-default 'content anemail))))
      (outline-hide-entry))))
+
+
+(defun print-email-headers (anemail)
+  (format
+   "From: %s <%s>\nMessage-ID: %s\nSubject: %s\nDate: %s:\n"
+   (assoc-default 'sender_name anemail)
+   (assoc-default 'address (assoc-default 'sender anemail))
+   (assoc-default 'message_id anemail)
+   (assoc-default 'subject anemail)
+   (assoc-default 'date anemail)))
+
+(defun maybe-print-email-attachments (anemail)
+  (let ((attachments (assoc-default 'attachments anemail)))
+    (if (> (length attachments) 0)
+        (progn
+          (insert "Attachments: ")
+          (insert
+           (mapconcat
+            (lambda (arg) (format "%s(%sKB)" (assoc-default 'name arg) (assoc-default 'size arg)))
+            attachments
+            ", "))
+          (insert "\n")))))
 
 
 (define-derived-mode thread-emails-mode outline-mode "thread-emails-mode"
@@ -77,7 +93,7 @@ the Email and print it to the current buffer.
 
 
 (setq email-highlights
-      '(("From:\\|Date:\\|Subject:\\|Message-ID:" . font-lock-keyword-face)
+      '(("From:\\|Date:\\|Subject:\\|Message-ID:\\|Attachments:" . font-lock-keyword-face)
         (">.*" . font-lock-comment-face)))
 
 (provide 'hyperkitty-email)
