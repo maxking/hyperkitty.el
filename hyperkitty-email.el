@@ -38,11 +38,15 @@ the Email and print it to the current buffer.
    (lambda (response)
      (let ((anemail (request-response-data response))
            (inhibit-read-only t))
-       (insert (format "From: %s\nSubject: %s\nDate: %s:\n\n%s\n\n"
-                       (assoc-default 'sender_name anemail)
-                       (assoc-default 'subject anemail)
-                       (assoc-default 'date anemail)
-                       (assoc-default 'content anemail))))
+       (insert
+        (format
+         "From: %s <%s>\nMessage-ID: %s\nSubject: %s\nDate: %s:\n\n%s\n\n"
+         (assoc-default 'sender_name anemail)
+         (assoc-default 'address (assoc-default 'sender anemail))
+         (assoc-default 'message_id anemail)
+         (assoc-default 'subject anemail)
+         (assoc-default 'date anemail)
+         (assoc-default 'content anemail))))
      (outline-hide-entry))))
 
 
@@ -52,6 +56,7 @@ the Email and print it to the current buffer.
 
 
 (defun hyperkitty-outline-toggle ()
+  "Show/Hide the current outline entry we are on."
   (interactive)
   (if (outline-invisible-p (line-end-position))
 	  (outline-show-entry)
@@ -72,7 +77,7 @@ the Email and print it to the current buffer.
 
 
 (setq email-highlights
-      '(("From:\\|Date:\\|Subject:" . font-lock-keyword-face)
+      '(("From:\\|Date:\\|Subject:\\|Message-ID:" . font-lock-keyword-face)
         (">.*" . font-lock-comment-face)))
 
 (provide 'hyperkitty-email)
