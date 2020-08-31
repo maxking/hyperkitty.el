@@ -17,11 +17,13 @@ about the Email.
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
   (thread-emails-mode)
+  (read-only-mode)
   (setq outline-regexp "From: ")
-  (insert (propertize
-		   (format "%s\n" subject)
-		   'font-lock-face 'bold
-		   'height 200))
+  (let ((inhibit-read-only t))
+        (insert (propertize
+                 (format "%s\n" subject)
+                 'font-lock-face 'bold
+                 'height 200)))
   (mapcar 'print-email (reverse (get-response-entries response))))
 
 
@@ -34,7 +36,8 @@ the Email and print it to the current buffer.
   (get-json
    (assoc-default 'url email)
    (lambda (response)
-     (let ((anemail (request-response-data response)))
+     (let ((anemail (request-response-data response))
+           (inhibit-read-only t))
        (insert (format "From: %s\nSubject: %s\nDate: %s:\n\n%s\n\n"
                        (assoc-default 'sender_name anemail)
                        (assoc-default 'subject anemail)
