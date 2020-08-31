@@ -1,5 +1,5 @@
 ;; -*- lexical-binding: t -*-
-(require-package 'request)
+(require 'request)
 
 (require 'hyperkitty-thread)
 (require 'hyperkitty-urls)
@@ -13,7 +13,18 @@
 (setf debug-on-error t)
 (setf lexical-binding t)
 
-(setq hyperkitty-base-url  "https://lists.mailman3.org/archives")
+(defvar hyperkitty-mlists nil
+  "A list of MailingLists configured for the current instance.
+
+Each entry in this list is a tuple, one the posting address for
+the MailingList and other is the Base URL of the server.
+
+For example:
+
+    (setq
+        hyperkitty-mlists
+        ((\"test@mailman3.org\" . \"https://lists.mailman3.org/archives\")))
+")
 
 
 ;;; HTTP fetch utilities.
@@ -56,19 +67,18 @@ name and description of the list."
           (assoc-default 'description mlist)))
 
 
-(defun choose-mailinglist (response)
+(defun choose-mailinglist ()
   "Ask user to choose a Mailinglist from the /lists API."
   (ido-completing-read
    "Select from list: "
-   (mapcar
-    (lambda (arg) (assoc-default 'name arg))
-    (get-response-entries response))))
+    hyperkitty-mlists))
 
 
-(defun choose-mailinglist-and-get-threads (response)
+(defun choose-mailinglist-and-get-threads ()
   "Choose mailinglist and get their threads."
-  (let* ((mlist (choose-mailinglist response))
-         (threads-url (hyperkitty-threads-url hyperkitty-base-url mlist)))
+  (let* ((mlist (choose-mailinglist))
+         (base-url (assoc-default mlist hyperkitty-mlists))
+         (threads-url (hyperkitty-threads-url base-url mlist)))
     (get-json threads-url (apply-partially 'print-threads-table mlist))))
 
 
@@ -80,6 +90,4 @@ variable and let's user choose one of the mailing list and then
 opens a new buffer with a list of threads for that MailingList.
 "
   (interactive)
-  (get-json
-   (hyperkitty-lists-url hyperkitty-base-url)
-   'choose-mailinglist-and-get-threads))
+  'choose-mailinglist-and-get-threads)

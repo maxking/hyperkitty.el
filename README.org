@@ -4,3 +4,34 @@ An emacs package for reading public mailing list archives hosted via
 [[https://hyperkitty.readthedocs.io][Hyperkitty]].
 
 Currently, this is a WIP and can only fetch and list emails in a new buffer.
+
+* Usage
+
+In order to use this library, first install it by cloning the git repo:
+
+#+begin_src bash
+$ git clone https://github.com/maxking/hyperkitty.el
+#+end_src
+
+Then, add the clone directory to the ~load-path~:
+
+#+begin_src emacs-lisp
+(add-to-list 'load-path "/path/to/hyperkitty.el")
+#+end_src
+
+There are a couple of dependencies that you'd need to install before using the
+package (I haven't figured out packaging yet!). You need to install:
+
+- [[https://github.com/tkf/emacs-request][emacs-request]]
+- [[https://www.masteringemacs.org/article/introduction-to-ido-mode][ido-mode]]
+
+After that, add this to your emacs init file:
+
+#+begin_src emacs-lisp
+(require 'hyperkitty)
+(setq hyperkitty-mlists
+      (list
+       (cons "test@mailman3.org" "https://lists.mailman3.org/archives")))
+#+end_src
+
+Then, you need to only start using by running ~M-x hyperkitty~.
