@@ -1,3 +1,10 @@
+(defvar hyperkitty-page-size 25
+  "Page size for Hyperkitty's pagination.
+
+This affects how is this package able to recoginize if there are
+more threads and print the [More Threads] button.
+")
+
 ;; Keyboard map for threads-mode.
 (defvar threads-mode-map nil "Keymap for 'threads-mode-map'")
 (progn
@@ -63,14 +70,18 @@ PageNumberPagination from Django Rest Framework.
 
 This creates a new button.
 "
-  (cons
-   (list "more-threads"
-		 (vector
-		  (cons
-		   "[More Threads]"
-		   (list 'action 'button-fetch-more-threads
-				 'type 'hyperkitty-more-threads-button )) "" ""))
-   (get-threads-response response)))
+  (let ((threads (get-threads-response response)))
+    (message (format "Length of threads is: %s and page-size is: %s" (length threads) hyperkitty-page-size))
+    (if (= (length threads) hyperkitty-page-size)
+        (cons
+         (list "more-threads"
+               (vector
+                (cons
+                 "[More Threads]"
+                 (list 'action 'button-fetch-more-threads
+                       'type 'hyperkitty-more-threads-button )) "" ""))
+         threads)
+      threads)))
 
 
 (defun button-fetch-more-threads (button)
