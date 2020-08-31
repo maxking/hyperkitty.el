@@ -58,12 +58,25 @@ the Email and print it to the current buffer.
     (if (> (length attachments) 0)
         (progn
           (insert "Attachments: ")
-          (insert
-           (mapconcat
-            (lambda (arg) (format "%s(%sKB)" (assoc-default 'name arg) (assoc-default 'size arg)))
-            attachments
-            ", "))
+           (mapcar
+            (lambda (arg)
+              (insert-button
+               (format "%s(%sKB)" (assoc-default 'name arg) (assoc-default 'size arg))
+               'action (apply-partially 'hyperkitty-attachments (assoc-default 'download arg)))
+              (insert " "))
+            attachments)
           (insert "\n")))))
+
+
+(defun hyperkitty-attachments (url button)
+  "Hyperkitty fetch the attachments.
+
+This exists as a separate function so that we can use
+`apply-partially' to create a function that acts like a click
+handler. Using this in a lambda function would evaluate it before
+we want it to be evaluated.
+"
+  (browse-url url))
 
 
 (define-derived-mode thread-emails-mode outline-mode "thread-emails-mode"
