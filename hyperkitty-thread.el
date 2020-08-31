@@ -19,7 +19,7 @@ columns, Subject, Reply and Last Active date.
   (tabulated-list-init-header))
 
 
-(defun print-threads-table (mlist response)
+(defun print-threads-table (mlist base-url response)
   "Print the whole threads table for a given MailingList.
 
 Create a new buffer, named after the MailingList and switch to
@@ -30,8 +30,10 @@ threads-mode. Finally, display all the threads from the response.
   (threads-mode)
   (make-local-variable 'page-num)
   (make-local-variable 'current-mlist)
+  (make-local-variable 'hyperkitty-base-url)
   (setq page-num 1)
   (setq current-mlist mlist)
+  (setq hyperkitty-base-url base-url)
   (setq tabulated-list-entries (get-threads-response-with-more-button response))
   (tabulated-list-print t))
 

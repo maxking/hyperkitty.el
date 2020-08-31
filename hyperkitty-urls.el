@@ -27,7 +27,6 @@ This does not handle pagination currently.
 
 (defun hyperkitty-get-base-url ()
   "Prompt User to get the base URL for hyperkitty."
-  (interactive)
   (read-string "Enter Hyperkitty URL:"))
 
 

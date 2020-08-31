@@ -5,10 +5,6 @@
 (require 'hyperkitty-urls)
 (require 'hyperkitty-email)
 
-;; (defcustom hyperkitty-base-url nil
-;;   "Base URL for Hyperkitty server."
-;;   :type str
-;;   :group 'hyperkitty)
 
 (setf debug-on-error t)
 (setf lexical-binding t)
@@ -32,7 +28,6 @@ For example:
   "Call the given `url' and call provided call function on success.
 
 We currently don't have a good error handling."
-  (interactive)
   (request
    url
    :parser 'json-read
@@ -79,7 +74,7 @@ name and description of the list."
   (let* ((mlist (choose-mailinglist))
          (base-url (assoc-default mlist hyperkitty-mlists))
          (threads-url (hyperkitty-threads-url base-url mlist)))
-    (get-json threads-url (apply-partially 'print-threads-table mlist))))
+    (get-json threads-url (apply-partially 'print-threads-table mlist base-url))))
 
 
 (defun hyperkitty ()
@@ -90,4 +85,6 @@ variable and let's user choose one of the mailing list and then
 opens a new buffer with a list of threads for that MailingList.
 "
   (interactive)
-  'choose-mailinglist-and-get-threads)
+  (choose-mailinglist-and-get-threads))
+
+(provide 'hyperkitty)
