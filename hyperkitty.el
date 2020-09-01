@@ -1,4 +1,32 @@
 ;; -*- lexical-binding: t -*-
+;;; hyperkitty.el --- Emacs interface for Hyperkitty archives
+
+;; Copyright 2020 Abhilash Raj
+
+;; Author: Abhilash Raj <maxking@asynchronous.in>
+;; URL: http://github.com/maxking/hyperkitty.el
+;; Version: 0.0.1
+;; Keywords: mail hyperkitty mailman
+;; Package-Requires: ((request "0.3.2") (emacs "24.3"))
+;; Prefix: hyperkitty
+;; Separator: -
+
+;;; Commentary
+;; This package provides an Emacs interface for reading Mailman 3 archives
+;; hosted via Hyperkitty.
+;;
+;; To use it, you need to set `hyperkitty-mlists' variable to a list of pairs
+;; of Mailinglist and base url for the hyperkitty's hosted instance. For
+;; example:
+;;
+;;     (setq
+;;        hyperkitty-mlists
+;;        ((cons \"test@mailman3.org\" \"https://lists.mailman3.org/archives\")))
+;;
+;; Then, you can simply use `M-x hyperkitty' to start using.
+
+;;; Code:
+(require 'cl-lib)
 (require 'request)
 
 (require 'hyperkitty-thread)
@@ -64,9 +92,10 @@ name and description of the list."
 
 (defun choose-mailinglist ()
   "Ask user to choose a Mailinglist from the /lists API."
-  (ido-completing-read
+  (funcall
+   completing-read-function
    "Select from list: "
-    hyperkitty-mlists))
+   hyperkitty-mlists))
 
 
 (defun choose-mailinglist-and-get-threads ()
@@ -88,3 +117,5 @@ opens a new buffer with a list of threads for that MailingList.
   (choose-mailinglist-and-get-threads))
 
 (provide 'hyperkitty)
+
+;;; hyperkitty.el ends here
