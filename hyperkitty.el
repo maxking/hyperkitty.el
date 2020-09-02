@@ -52,6 +52,7 @@ For example:
   "Call the given `URL' and call provided call function on success.
 
 We currently don't have a good error handling.
+Argument URL to fetch json response for.
 Argument SUCCESS-FUNC Response handler for the json from URL."
   (request
    url
@@ -62,6 +63,9 @@ Argument SUCCESS-FUNC Response handler for the json from URL."
 
 
 (defun hyperkitty--get-response-entries (response)
+  "Get entries from the paginated response.
+
+Argument RESPONSE HTTP response to get object entries from."
   (assoc-default 'results (request-response-data response)))
 
 
@@ -79,8 +83,9 @@ the list of MailingList."
 
 
 (defun hyperkitty--print-mailinglist (mlist)
-  "Get an association lists and prints the display name,
-name and description of the list."
+  "Get an association lists and prints the details to buffer.
+
+Argument MLIST the mailinglist object from the API to print."
   (format "\nName: %s \nAddress: %s \nDescription: %s \n"
           (assoc-default 'display_name mlist)
           (assoc-default 'name mlist)
@@ -104,7 +109,7 @@ name and description of the list."
 
 
 (defun hyperkitty ()
-  "This is the primary entrypoint to hyperkitty.el
+  "This is the primary entrypoint to hyperkitty.el.
 
 It fetches the Hyperkitty API from the `hyperkitty-base-url'
 variable and let's user choose one of the mailing list and then
@@ -149,7 +154,8 @@ columns, Subject, Reply and Last Active date.
 Create a new buffer, named after the MailingList and switch to
 `hyperkitty-threads-mode'.  Finally, display all the threads from the RESPONSE.
 Argument MLIST Posting address for the MailingList.
-Argument BASE-URL base-url for the hyperkitty instance."
+Argument BASE-URL base-url for the hyperkitty instance.
+Argument RESPONSE HTTP response for MLIST's threads."
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
   (hyperkitty-threads-mode)
@@ -172,7 +178,8 @@ It expects data in the form of:
                ...])
 
 It also expects the list to be paginated with simple
-PageNumberPagination from Django Rest Framework."
+PageNumberPagination from Django Rest Framework.
+Argument RESPONSE HTTP json response to get threads from."
   (mapcar (lambda (arg) (list (assoc-default 'url arg)
                               (vector (assoc-default 'subject arg)
                                       (number-to-string (assoc-default 'replies_count arg))
@@ -182,10 +189,10 @@ PageNumberPagination from Django Rest Framework."
 
 
 (defun hyperkitty--get-threads-response-with-more-button (response)
-  "Get the list of threads from the response and add a
-[More Threads] button.
+  "Get the list of threads from the response.
+Also, add a [More Threads] button in the last line.
 
-This creates a new button."
+Argument RESPONSE HTTP json response for threads."
   (let ((threads (hyperkitty--get-threads-response response)))
     (message (format "Length of threads is: %s and page-size is: %s" (length threads) hyperkitty-page-size))
     (if (= (length threads) hyperkitty-page-size)
@@ -209,6 +216,8 @@ Argument BUTTON The button which this is a handler for."
 
 
 (defun hyperkitty--update-threads (response)
+  "Handler for [More Threads] button in threads view.
+Argument RESPONSE for the json response for more threads."
   (setq tabulated-list-entries (append tabulated-list-entries (hyperkitty--get-threads-response response)))
   (tabulated-list-print t))
 
@@ -266,6 +275,7 @@ the Email and print it to the current buffer."
 
 
 (defun hyperkitty--print-email-headers (anemail)
+  "Print ANEMAIL's headers in the current buffer."
   (format
    "From: %s <%s>\nMessage-ID: %s\nSubject: %s\nDate: %s:\n"
    (assoc-default 'sender_name anemail)
@@ -275,6 +285,7 @@ the Email and print it to the current buffer."
    (assoc-default 'date anemail)))
 
 (defun hyperkitty--maybe-print-email-attachments (anemail)
+  "If ANEMAIL has attachments, print them as clickable text."
   (let ((attachments (assoc-default 'attachments anemail)))
     (if (> (length attachments) 0)
         (progn
