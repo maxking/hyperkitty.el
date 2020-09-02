@@ -1,4 +1,4 @@
-;;; hyperkitty.el --- Emacs interface for Hyperkitty archives
+;;; hyperkitty.el --- Emacs interface for Hyperkitty archives -*- lexical-binding: t; -*-
 
 ;; Copyright (c) 2020 Abhilash Raj
 ;;
@@ -17,7 +17,7 @@
 ;; hosted via Hyperkitty.
 ;;
 ;; To use it, you need to set `hyperkitty-mlists' variable to a list of pairs
-;; of Mailinglist and base url for the hyperkitty's hosted instance. For
+;; of Mailinglist and base url for the hyperkitty's hosted instance.  For
 ;; example:
 ;;
 ;;     (setq
@@ -138,7 +138,7 @@ It presents a list of threads in a tabular format with three
 columns, Subject, Reply and Last Active date.
 "
   (setq tabulated-list-format [("Subject" 80 nil)
-							   ("Reply" 5 nil)
+                               ("Reply" 5 nil)
                                ("Last Active" 15 t)])
   (setq tabulated-list-sort-key (cons "Last Active" t))
   (tabulated-list-init-header))
@@ -176,7 +176,7 @@ PageNumberPagination from Django Rest Framework.
 "
   (mapcar (lambda (arg) (list (assoc-default 'url arg)
                               (vector (assoc-default 'subject arg)
-									  (number-to-string (assoc-default 'replies_count arg))
+                                      (number-to-string (assoc-default 'replies_count arg))
                                       (assoc-default 'date_active arg))))
           (hyperkitty--get-response-entries response)))
 
@@ -206,7 +206,7 @@ This creates a new button.
   "Get more threads for the current thread."
   (setq page-num (+ page-num 1))
   (let ((threads-url (hyperkitty-threads-url hyperkitty-base-url current-mlist page-num)))
-	(hyperkitty--get-json threads-url 'update-threads)))
+    (hyperkitty--get-json threads-url 'update-threads)))
 
 
 (defun hyperkitty--update-threads (response)
@@ -281,7 +281,7 @@ the Email and print it to the current buffer.
     (if (> (length attachments) 0)
         (progn
           (insert "Attachments: ")
-           (mapcar
+           (mapc
             (lambda (arg)
               (insert-button
                (format "%s(%sKB)" (assoc-default 'name arg) (assoc-default 'size arg))
@@ -311,8 +311,8 @@ we want it to be evaluated.
   "Show/Hide the current outline entry we are on."
   (interactive)
   (if (outline-invisible-p (line-end-position))
-	  (outline-show-entry)
-	(outline-hide-entry)))
+      (outline-show-entry)
+    (outline-hide-entry)))
 
 (defun hyperkitty-kill-current-buffer ()
   "Kill the current buffer."
@@ -348,9 +348,9 @@ Currently, this does not handle pagination and simply returns the
 default URL without pagination.
 "
   (let ((thread-url (concat base-url "/api/list/" mlist "/threads")))
-	(if page
-		(concat thread-url (format "?page=%s" page))
-	  thread-url)))
+    (if page
+        (concat thread-url (format "?page=%s" page))
+      thread-url)))
 
 (defun hyperkitty-thread-emails-url (threads-url)
   "Get all emails for the given thread URL.
