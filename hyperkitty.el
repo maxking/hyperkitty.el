@@ -49,9 +49,10 @@ For example:
 
 ;;; HTTP fetch utilities.
 (defun hyperkitty--get-json (url success-func)
-  "Call the given `url' and call provided call function on success.
+  "Call the given `URL' and call provided call function on success.
 
-We currently don't have a good error handling."
+We currently don't have a good error handling.
+Argument SUCCESS-FUNC Response handler for the json from URL."
   (request
    url
    :parser 'json-read
@@ -66,9 +67,9 @@ We currently don't have a good error handling."
 
 ;;; Test function to print all the mailing list.
 (defun hyperkitty-print-mailinglist-response (response)
-  "Print each element MailingLists from the response.
+  "Print each element MailingLists from the RESPONSE.
 
-Handler for HTTP response for all the lists API. It simply prints
+Handler for HTTP response for all the lists API.  It simply prints
 the list of MailingList."
   (with-current-buffer "*scratch*"
     (insert (format "URL: %s, Status: %s, Data: %s"
@@ -107,8 +108,7 @@ name and description of the list."
 
 It fetches the Hyperkitty API from the `hyperkitty-base-url'
 variable and let's user choose one of the mailing list and then
-opens a new buffer with a list of threads for that MailingList.
-"
+opens a new buffer with a list of threads for that MailingList."
   (interactive)
   (hyperkitty--choose-mailinglist-and-get-threads))
 
@@ -121,11 +121,10 @@ opens a new buffer with a list of threads for that MailingList.
   "Page size for Hyperkitty's pagination.
 
 This affects how is this package able to recoginize if there are
-more threads and print the [More Threads] button.
-")
+more threads and print the [More Threads] button.")
 
 ;; Keyboard map for hyperkitty-threads-mode.
-(defvar hyperkitty-threads-mode-map nil "Keymap for 'hyperkitty-threads-mode-map'")
+(defvar hyperkitty-threads-mode-map nil "Keymap for 'hyperkitty-threads-mode-map'.")
 (progn
   (setq hyperkitty-threads-mode-map (make-sparse-keymap))
   (define-key hyperkitty-threads-mode-map (kbd "<RET>") 'get-thread-emails))
@@ -148,8 +147,9 @@ columns, Subject, Reply and Last Active date.
   "Print the whole threads table for a given MailingList.
 
 Create a new buffer, named after the MailingList and switch to
-hyperkitty-threads-mode. Finally, display all the threads from the response.
-"
+`hyperkitty-threads-mode'.  Finally, display all the threads from the RESPONSE.
+Argument MLIST Posting address for the MailingList.
+Argument BASE-URL base-url for the hyperkitty instance."
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
   (hyperkitty-threads-mode)
@@ -164,16 +164,15 @@ hyperkitty-threads-mode. Finally, display all the threads from the response.
 
 
 (defun hyperkitty--get-threads-response (response)
-  "Given a HTTP response, return a list that tablulated-list-mode.
+  "Given a HTTP RESPONSE, return a list that tablulated-list-mode.
 
 It expects data in the form of:
-(<thread-url> [(<subject> <date>)
+\(<thread-url> [(<subject> <date>)
                (<subject2> <date2>)
                ...])
 
 It also expects the list to be paginated with simple
-PageNumberPagination from Django Rest Framework.
-"
+PageNumberPagination from Django Rest Framework."
   (mapcar (lambda (arg) (list (assoc-default 'url arg)
                               (vector (assoc-default 'subject arg)
                                       (number-to-string (assoc-default 'replies_count arg))
@@ -186,8 +185,7 @@ PageNumberPagination from Django Rest Framework.
   "Get the list of threads from the response and add a
 [More Threads] button.
 
-This creates a new button.
-"
+This creates a new button."
   (let ((threads (hyperkitty--get-threads-response response)))
     (message (format "Length of threads is: %s and page-size is: %s" (length threads) hyperkitty-page-size))
     (if (= (length threads) hyperkitty-page-size)
@@ -203,7 +201,8 @@ This creates a new button.
 
 
 (defun hyperkitty--button-fetch-more-threads (button)
-  "Get more threads for the current thread."
+  "Get more threads for the current thread.
+Argument BUTTON The button which this is a handler for."
   (setq page-num (+ page-num 1))
   (let ((threads-url (hyperkitty-threads-url hyperkitty-base-url current-mlist page-num)))
     (hyperkitty--get-json threads-url 'update-threads)))
@@ -232,11 +231,11 @@ This creates a new button.
 (defun hyperkitty--print-emails-response (subject response)
   "Print all the Emails of a thread in a new Buffer.
 
-Create a new buffer, named after the subject of the email and
-print all the emails in that new buffer. Each Email's content is
+Create a new buffer, named after the SUBJECT of the email and
+print all the emails in that new buffer.  Each Email's content is
 fetched individual since the entries only contain the metadata
 about the Email.
-"
+Argument RESPONSE HTTP response to print in the current buffer."
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
   (thread-emails-mode)
@@ -251,11 +250,10 @@ about the Email.
 
 
 (defun hyperkitty--print-email (email)
-  "Fetch and print a single email to the current buffer.
+  "Fetch and print a single EMAIL to the current buffer.
 
 Given a metadata object for Email, fetch the actual contents of
-the Email and print it to the current buffer.
-"
+the Email and print it to the current buffer."
   (hyperkitty--get-json
    (assoc-default 'url email)
    (lambda (response)
@@ -296,9 +294,10 @@ the Email and print it to the current buffer.
 
 This exists as a separate function so that we can use
 `apply-partially' to create a function that acts like a click
-handler. Using this in a lambda function would evaluate it before
+handler.  Using this in a lambda function would evaluate it before
 we want it to be evaluated.
-"
+Argument URL URL to open in browser.
+Argument BUTTON Button object for this handler."
   (browse-url url))
 
 
@@ -320,7 +319,7 @@ we want it to be evaluated.
   (kill-buffer (current-buffer)))
 
 
-(defvar hyperkitty-thread-emails-mode-map nil "Keymap for 'hyperkitty-thread-emails-mode'")
+(defvar hyperkitty-thread-emails-mode-map nil "Keymap for 'hyperkitty-thread-emails-mode'.")
 (progn
   (setq hyperkitty-thread-emails-mode-map (make-sparse-keymap))
   (define-key hyperkitty-thread-emails-mode-map (kbd "<RET>") 'hyperkitty-outline-toggle)
@@ -338,7 +337,7 @@ we want it to be evaluated.
 
 Currently, this does not handle pagination and simply returns the
 default URL without pagination.
-"
+Argument BASE-URL Base URL for Hyperkitty instnace."
   (concat base-url "/api/lists/"))
 
 (defun hyperkitty-threads-url (base-url mlist &optional page)
@@ -346,7 +345,9 @@ default URL without pagination.
 
 Currently, this does not handle pagination and simply returns the
 default URL without pagination.
-"
+Argument BASE-URL Base URL for hyperkitty instance.
+Argument MLIST MailingList's posting address.
+Optional argument PAGE The page number for the paginated response."
   (let ((thread-url (concat base-url "/api/list/" mlist "/threads")))
     (if page
         (concat thread-url (format "?page=%s" page))
@@ -356,7 +357,7 @@ default URL without pagination.
   "Get all emails for the given thread URL.
 
 This does not handle pagination currently.
-"
+Argument THREADS-URL URL to the current thread."
   (concat threads-url "/emails"))
 
 
