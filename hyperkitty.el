@@ -1,17 +1,18 @@
-;; -*- lexical-binding: t -*-
 ;;; hyperkitty.el --- Emacs interface for Hyperkitty archives
 
-;; Copyright 2020 Abhilash Raj
-
+;; Copyright (c) 2020 Abhilash Raj
+;;
 ;; Author: Abhilash Raj <maxking@asynchronous.in>
 ;; URL: http://github.com/maxking/hyperkitty.el
 ;; Version: 0.0.1
 ;; Keywords: mail hyperkitty mailman
-;; Package-Requires: ((request "0.3.2") (emacs "24.3"))
+;; Package-Requires: ((request "0.3.2") (emacs "25.1"))
 ;; Prefix: hyperkitty
 ;; Separator: -
 
-;;; Commentary
+
+;;; Commentary:
+;;
 ;; This package provides an Emacs interface for reading Mailman 3 archives
 ;; hosted via Hyperkitty.
 ;;
@@ -26,13 +27,9 @@
 ;; Then, you can simply use `M-x hyperkitty' to start using.
 
 ;;; Code:
+
 (require 'cl-lib)
 (require 'request)
-
-(require 'hyperkitty-thread)
-(require 'hyperkitty-urls)
-(require 'hyperkitty-email)
-
 
 (setf debug-on-error t)
 (setf lexical-binding t)
@@ -47,12 +44,11 @@ For example:
 
     (setq
         hyperkitty-mlists
-        ((\"test@mailman3.org\" . \"https://lists.mailman3.org/archives\")))
-")
+        ((\"test@mailman3.org\" . \"https://lists.mailman3.org/archives\")))")
 
 
 ;;; HTTP fetch utilities.
-(defun get-json (url success-func)
+(defun hyperkitty--get-json (url success-func)
   "Call the given `url' and call provided call function on success.
 
 We currently don't have a good error handling."
@@ -64,12 +60,12 @@ We currently don't have a good error handling."
                   (funcall success-func response)))))
 
 
-(defun get-response-entries (response)
+(defun hyperkitty--get-response-entries (response)
   (assoc-default 'results (request-response-data response)))
 
 
 ;;; Test function to print all the mailing list.
-(defun print-mailinglist-response (response)
+(defun hyperkitty-print-mailinglist-response (response)
   "Print each element MailingLists from the response.
 
 Handler for HTTP response for all the lists API. It simply prints
@@ -78,10 +74,10 @@ the list of MailingList."
     (insert (format "URL: %s, Status: %s, Data: %s"
                     (request-response-url response)
                     (request-response-status-code response)
-                    (mapcar 'print-mailinglist (get-response-entries response))))))
+                    (mapcar 'print-mailinglist (hyperkitty--get-response-entries response))))))
 
 
-(defun print-mailinglist (mlist)
+(defun hyperkitty--print-mailinglist (mlist)
   "Get an association lists and prints the display name,
 name and description of the list."
   (format "\nName: %s \nAddress: %s \nDescription: %s \n"
@@ -90,7 +86,7 @@ name and description of the list."
           (assoc-default 'description mlist)))
 
 
-(defun choose-mailinglist ()
+(defun hyperkitty--choose-mailinglist ()
   "Ask user to choose a Mailinglist from the /lists API."
   (funcall
    completing-read-function
@@ -98,12 +94,12 @@ name and description of the list."
    hyperkitty-mlists))
 
 
-(defun choose-mailinglist-and-get-threads ()
+(defun hyperkitty--choose-mailinglist-and-get-threads ()
   "Choose mailinglist and get their threads."
-  (let* ((mlist (choose-mailinglist))
+  (let* ((mlist (hyperkitty--choose-mailinglist))
          (base-url (assoc-default mlist hyperkitty-mlists))
          (threads-url (hyperkitty-threads-url base-url mlist)))
-    (get-json threads-url (apply-partially 'print-threads-table mlist base-url))))
+    (hyperkitty--get-json threads-url (apply-partially 'print-threads-table mlist base-url))))
 
 
 (defun hyperkitty ()
@@ -114,7 +110,7 @@ variable and let's user choose one of the mailing list and then
 opens a new buffer with a list of threads for that MailingList.
 "
   (interactive)
-  (choose-mailinglist-and-get-threads))
+  (hyperkitty--choose-mailinglist-and-get-threads))
 
 (provide 'hyperkitty)
 
@@ -128,15 +124,14 @@ This affects how is this package able to recoginize if there are
 more threads and print the [More Threads] button.
 ")
 
-;; Keyboard map for threads-mode.
-(defvar threads-mode-map nil "Keymap for 'threads-mode-map'")
+;; Keyboard map for hyperkitty-threads-mode.
+(defvar hyperkitty-threads-mode-map nil "Keymap for 'hyperkitty-threads-mode-map'")
 (progn
-  (setq threads-mode-map (make-sparse-keymap))
-  (define-key threads-mode-map (kbd "<RET>") 'get-thread-emails)
-  )
+  (setq hyperkitty-threads-mode-map (make-sparse-keymap))
+  (define-key hyperkitty-threads-mode-map (kbd "<RET>") 'get-thread-emails))
 
 
-(define-derived-mode threads-mode tabulated-list-mode "threads-mode"
+(define-derived-mode hyperkitty-threads-mode tabulated-list-mode "hyperkitty-threads-mode"
   "Major mode for MailingList threads.
 
 It presents a list of threads in a tabular format with three
@@ -149,15 +144,15 @@ columns, Subject, Reply and Last Active date.
   (tabulated-list-init-header))
 
 
-(defun print-threads-table (mlist base-url response)
+(defun hyperkitty--print-threads-table (mlist base-url response)
   "Print the whole threads table for a given MailingList.
 
 Create a new buffer, named after the MailingList and switch to
-threads-mode. Finally, display all the threads from the response.
+hyperkitty-threads-mode. Finally, display all the threads from the response.
 "
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
-  (threads-mode)
+  (hyperkitty-threads-mode)
   (make-local-variable 'page-num)
   (make-local-variable 'current-mlist)
   (make-local-variable 'hyperkitty-base-url)
@@ -168,7 +163,7 @@ threads-mode. Finally, display all the threads from the response.
   (tabulated-list-print t))
 
 
-(defun get-threads-response (response)
+(defun hyperkitty--get-threads-response (response)
   "Given a HTTP response, return a list that tablulated-list-mode.
 
 It expects data in the form of:
@@ -183,17 +178,17 @@ PageNumberPagination from Django Rest Framework.
                               (vector (assoc-default 'subject arg)
 									  (number-to-string (assoc-default 'replies_count arg))
                                       (assoc-default 'date_active arg))))
-          (get-response-entries response)))
+          (hyperkitty--get-response-entries response)))
 
 
 
-(defun get-threads-response-with-more-button (response)
+(defun hyperkitty--get-threads-response-with-more-button (response)
   "Get the list of threads from the response and add a
 [More Threads] button.
 
 This creates a new button.
 "
-  (let ((threads (get-threads-response response)))
+  (let ((threads (hyperkitty--get-threads-response response)))
     (message (format "Length of threads is: %s and page-size is: %s" (length threads) hyperkitty-page-size))
     (if (= (length threads) hyperkitty-page-size)
         (cons
@@ -207,34 +202,34 @@ This creates a new button.
       threads)))
 
 
-(defun button-fetch-more-threads (button)
+(defun hyperkitty--button-fetch-more-threads (button)
   "Get more threads for the current thread."
   (setq page-num (+ page-num 1))
   (let ((threads-url (hyperkitty-threads-url hyperkitty-base-url current-mlist page-num)))
-	(get-json threads-url 'update-threads)))
+	(hyperkitty--get-json threads-url 'update-threads)))
 
 
-(defun update-threads (response)
-  (setq tabulated-list-entries (append tabulated-list-entries (get-threads-response response)))
+(defun hyperkitty--update-threads (response)
+  (setq tabulated-list-entries (append tabulated-list-entries (hyperkitty--get-threads-response response)))
   (tabulated-list-print t))
 
 
 (define-button-type 'hyperkitty-more-threads-button
-  'action 'button-fetch-more-threads
+  'action 'hyperkitty--button-fetch-more-threads
   'follow-link t
   'help-echo "Fetch More threads"
   'help-args "Get more threads.")
 
 ;; message stuff.
-(defun get-thread-emails ()
+(defun hyperkitty--get-thread-emails ()
   "Get Emails for the thread of current line."
   (interactive)
-  (get-json
+  (hyperkitty--get-json
    (hyperkitty-thread-emails-url (tabulated-list-get-id))
-   (apply-partially 'print-emails-response (elt (tabulated-list-get-entry) 0))))
+   (apply-partially 'hyperkitty--print-emails-response (elt (tabulated-list-get-entry) 0))))
 
 
-(defun print-emails-response (subject response)
+(defun hyperkitty--print-emails-response (subject response)
   "Print all the Emails of a thread in a new Buffer.
 
 Create a new buffer, named after the subject of the email and
@@ -252,27 +247,27 @@ about the Email.
                  (format "%s\n" subject)
                  'font-lock-face 'bold
                  'height 200)))
-  (mapcar 'print-email (reverse (get-response-entries response))))
+  (mapcar 'print-email (reverse (hyperkitty--get-response-entries response))))
 
 
-(defun print-email (email)
+(defun hyperkitty--print-email (email)
   "Fetch and print a single email to the current buffer.
 
 Given a metadata object for Email, fetch the actual contents of
 the Email and print it to the current buffer.
 "
-  (get-json
+  (hyperkitty--get-json
    (assoc-default 'url email)
    (lambda (response)
      (let ((anemail (request-response-data response))
            (inhibit-read-only t))
-       (insert (print-email-headers anemail))
-       (maybe-print-email-attachments anemail)
+       (insert (hyperkitty--print-email-headers anemail))
+       (hyperkitty--maybe-print-email-attachments anemail)
        (insert (format "\n%s\n\n" (assoc-default 'content anemail))))
      (outline-hide-entry))))
 
 
-(defun print-email-headers (anemail)
+(defun hyperkitty--print-email-headers (anemail)
   (format
    "From: %s <%s>\nMessage-ID: %s\nSubject: %s\nDate: %s:\n"
    (assoc-default 'sender_name anemail)
@@ -281,7 +276,7 @@ the Email and print it to the current buffer.
    (assoc-default 'subject anemail)
    (assoc-default 'date anemail)))
 
-(defun maybe-print-email-attachments (anemail)
+(defun hyperkitty--maybe-print-email-attachments (anemail)
   (let ((attachments (assoc-default 'attachments anemail)))
     (if (> (length attachments) 0)
         (progn
@@ -290,13 +285,13 @@ the Email and print it to the current buffer.
             (lambda (arg)
               (insert-button
                (format "%s(%sKB)" (assoc-default 'name arg) (assoc-default 'size arg))
-               'action (apply-partially 'hyperkitty-attachments (assoc-default 'download arg)))
+               'action (apply-partially 'hyperkitty--attachments (assoc-default 'download arg)))
               (insert " "))
             attachments)
           (insert "\n")))))
 
 
-(defun hyperkitty-attachments (url button)
+(defun hyperkitty--attachments (url button)
   "Hyperkitty fetch the attachments.
 
 This exists as a separate function so that we can use
@@ -307,7 +302,7 @@ we want it to be evaluated.
   (browse-url url))
 
 
-(define-derived-mode thread-emails-mode outline-mode "thread-emails-mode"
+(define-derived-mode hyperkitty-thread-emails-mode outline-mode "hyperkitty-thread-emails-mode"
   "Minor mode to simulate buffer local keybindings."
   (setq font-lock-defaults '(email-highlights)))
 
@@ -325,12 +320,12 @@ we want it to be evaluated.
   (kill-buffer (current-buffer)))
 
 
-(defvar thread-emails-mode-map nil "Keymap for 'thread-emails-mode'")
+(defvar hyperkitty-thread-emails-mode-map nil "Keymap for 'hyperkitty-thread-emails-mode'")
 (progn
-  (setq thread-emails-mode-map (make-sparse-keymap))
-  (define-key thread-emails-mode-map (kbd "<RET>") 'hyperkitty-outline-toggle)
-  (define-key thread-emails-mode-map (kbd "TAB") 'hyperkitty-outline-toggle)
-  (define-key thread-emails-mode-map (kbd "q") 'hyperkitty-kill-current-buffer))
+  (setq hyperkitty-thread-emails-mode-map (make-sparse-keymap))
+  (define-key hyperkitty-thread-emails-mode-map (kbd "<RET>") 'hyperkitty-outline-toggle)
+  (define-key hyperkitty-thread-emails-mode-map (kbd "TAB") 'hyperkitty-outline-toggle)
+  (define-key hyperkitty-thread-emails-mode-map (kbd "q") 'hyperkitty-kill-current-buffer))
 
 
 (setq email-highlights
