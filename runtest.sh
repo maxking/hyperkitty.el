@@ -2,7 +2,7 @@
 
 EMACS="${EMACS:=emacs}"
 
-NEEDED_PACKAGES="cl-lib let-alist package-lint"
+NEEDED_PACKAGES="cl-lib let-alist package-lint request"
 
 INIT_PACKAGE_EL="(progn \
   (require 'package) \
