@@ -31,7 +31,8 @@ jobs:
     steps:
       - name: Set up Emacs
         uses: purcell/setup-emacs@v2.0
-
+        with:
+          version: ${{ matrix.emacs_version }}
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
