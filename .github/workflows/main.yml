@@ -25,8 +25,6 @@ jobs:
           - 26.3
           - 27.1
           - snapshot
-    env:
-      EMACS_LINT_IGNORE: ${{ matrix.lint_ignore }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Set up Emacs
