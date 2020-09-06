@@ -148,6 +148,15 @@ columns, Subject, Reply and Last Active date.
   (tabulated-list-init-header))
 
 
+(defvar page-num nil
+  "Current page number in the threads page.")
+
+(defvar current-mlist nil
+  "Current mailinglist in the threads page.")
+
+(defvar hyperkitty-base-url nil
+  "Base URL of Hyperkitty hosting the `current-mmlist' mailinglist.")
+
 (defun hyperkitty--print-threads-table (mlist base-url response)
   "Print the whole threads table for a given MailingList.
 
@@ -165,7 +174,7 @@ Argument RESPONSE HTTP response for MLIST's threads."
   (setq page-num 1)
   (setq current-mlist mlist)
   (setq hyperkitty-base-url base-url)
-  (setq tabulated-list-entries (get-threads-response-with-more-button response))
+  (setq tabulated-list-entries (hyperkitty--get-threads-response-with-more-button response))
   (tabulated-list-print t))
 
 
@@ -207,7 +216,7 @@ Argument RESPONSE HTTP json response for threads."
       threads)))
 
 
-(defun hyperkitty--button-fetch-more-threads (button)
+(defun hyperkitty--button-fetch-more-threads (_)
   "Get more threads for the current thread.
 Argument BUTTON The button which this is a handler for."
   (setq page-num (+ page-num 1))
@@ -247,7 +256,7 @@ about the Email.
 Argument RESPONSE HTTP response to print in the current buffer."
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
-  (thread-emails-mode)
+  (hyperkitty-thread-emails-mode)
   (read-only-mode)
   (setq outline-regexp "From: ")
   (let ((inhibit-read-only t))
@@ -300,7 +309,7 @@ the Email and print it to the current buffer."
           (insert "\n")))))
 
 
-(defun hyperkitty--attachments (url button)
+(defun hyperkitty--attachments (url _)
   "Hyperkitty fetch the attachments.
 
 This exists as a separate function so that we can use
