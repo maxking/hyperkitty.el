@@ -16,12 +16,24 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        emacs_version:
+          - 25.3
+          - 26.1
+          - 26.2
+          - 26.3
+          - 27.1
+          - snapshot
+    env:
+      EMACS_LINT_IGNORE: ${{ matrix.lint_ignore }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Set up Emacs
+        uses: purcell/setup-emacs@v2.0
+
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Set up Emacs
-        uses: purcell/setup-emacs@v2.0
-          
+      - name: Run Tests
+        run: './runtest.sh'
