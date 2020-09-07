@@ -106,7 +106,7 @@ Argument MLIST the mailinglist object from the API to print."
   (let* ((mlist (hyperkitty--choose-mailinglist))
          (base-url (assoc-default mlist hyperkitty-mlists))
          (threads-url (hyperkitty-threads-url base-url mlist)))
-    (hyperkitty--get-json threads-url (apply-partially 'print-threads-table mlist base-url))))
+    (hyperkitty--get-json threads-url (apply-partially #'hyperkitty--print-threads-table mlist base-url))))
 
 
 (defun hyperkitty ()
@@ -117,9 +117,6 @@ variable and let's user choose one of the mailing list and then
 opens a new buffer with a list of threads for that MailingList."
   (interactive)
   (hyperkitty--choose-mailinglist-and-get-threads))
-
-(provide 'hyperkitty)
-
 
 ;; threads related.
 
@@ -133,7 +130,7 @@ more threads and print the [More Threads] button.")
 (defvar hyperkitty-threads-mode-map nil "Keymap for 'hyperkitty-threads-mode-map'.")
 (progn
   (setq hyperkitty-threads-mode-map (make-sparse-keymap))
-  (define-key hyperkitty-threads-mode-map (kbd "<RET>") 'get-thread-emails))
+  (define-key hyperkitty-threads-mode-map (kbd "<RET>") #'hyperkitty--get-thread-emails))
 
 
 (define-derived-mode hyperkitty-threads-mode tabulated-list-mode "hyperkitty-threads-mode"
@@ -169,13 +166,12 @@ Argument RESPONSE HTTP response for MLIST's threads."
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
   (hyperkitty-threads-mode)
-  (make-local-variable 'hyperkitty-page-num)
-  (make-local-variable 'hyperkitty-current-mlist)
-  (make-local-variable 'hyperkitty-base-url)
-  (setq hyperkitty-page-num 1)
-  (setq hyperkitty-current-mlist mlist)
-  (setq hyperkitty-base-url base-url)
-  (setq tabulated-list-entries (hyperkitty--get-threads-response-with-more-button response))
+  (dolist (var '(hyperkitty-page-num hyperkitty-current-mlist hyperkitty-base-url))
+    (make-local-variable var))
+  (setq hyperkitty-page-num 1
+        hyperkitty-current-mlist mlist
+        hyperkitty-base-url base-url
+        tabulated-list-entries (hyperkitty--get-threads-response-with-more-button response))
   (tabulated-list-print t))
 
 
@@ -333,18 +329,12 @@ Argument BUTTON Button object for this handler."
       (outline-show-entry)
     (outline-hide-entry)))
 
-(defun hyperkitty-kill-current-buffer ()
-  "Kill the current buffer."
-  (interactive)
-  (kill-buffer (current-buffer)))
-
-
 (defvar hyperkitty-thread-emails-mode-map nil "Keymap for 'hyperkitty-thread-emails-mode'.")
 (progn
   (setq hyperkitty-thread-emails-mode-map (make-sparse-keymap))
-  (define-key hyperkitty-thread-emails-mode-map (kbd "<RET>") 'hyperkitty-outline-toggle)
-  (define-key hyperkitty-thread-emails-mode-map (kbd "TAB") 'hyperkitty-outline-toggle)
-  (define-key hyperkitty-thread-emails-mode-map (kbd "q") 'hyperkitty-kill-current-buffer))
+  (define-key hyperkitty-thread-emails-mode-map (kbd "<RET>") #'hyperkitty-outline-toggle)
+  (define-key hyperkitty-thread-emails-mode-map (kbd "TAB") #'hyperkitty-outline-toggle)
+  (define-key hyperkitty-thread-emails-mode-map (kbd "q") #'kill-buffer-and-window))
 
 
 (setq email-highlights
@@ -384,5 +374,8 @@ Argument THREADS-URL URL to the current thread."
 (defun hyperkitty-get-base-url ()
   "Prompt User to get the base URL for hyperkitty."
   (read-string "Enter Hyperkitty URL:"))
+
+
+(provide 'hyperkitty)
 
 ;;; hyperkitty.el ends here
