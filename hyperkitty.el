@@ -37,10 +37,8 @@
 
 (defvar hyperkitty-mlists nil
   "A list of MailingLists configured for the current instance.
-
 Each entry in this list is a tuple, one the posting address for
 the MailingList and other is the Base URL of the server.
-
 For example:
 
     (setq
@@ -51,7 +49,6 @@ For example:
 ;;; HTTP fetch utilities.
 (defun hyperkitty--get-json (url success-func)
   "Call the given `URL' and call provided call function on success.
-
 We currently don't have a good error handling.
 Argument URL to fetch json response for.
 Argument SUCCESS-FUNC Response handler for the json from URL."
@@ -65,7 +62,6 @@ Argument SUCCESS-FUNC Response handler for the json from URL."
 
 (defun hyperkitty--get-response-entries (response)
   "Get entries from the paginated response.
-
 Argument RESPONSE HTTP response to get object entries from."
   (assoc-default 'results (request-response-data response)))
 
@@ -73,7 +69,6 @@ Argument RESPONSE HTTP response to get object entries from."
 ;;; Test function to print all the mailing list.
 (defun hyperkitty-print-mailinglist-response (response)
   "Print each element MailingLists from the RESPONSE.
-
 Handler for HTTP response for all the lists API.  It simply prints
 the list of MailingList."
   (with-current-buffer "*scratch*"
@@ -85,7 +80,6 @@ the list of MailingList."
 
 (defun hyperkitty--print-mailinglist (mlist)
   "Get an association lists and prints the details to buffer.
-
 Argument MLIST the mailinglist object from the API to print."
   (format "\nName: %s \nAddress: %s \nDescription: %s \n"
           (assoc-default 'display_name mlist)
@@ -111,7 +105,6 @@ Argument MLIST the mailinglist object from the API to print."
 
 (defun hyperkitty ()
   "This is the primary entrypoint to hyperkitty.el.
-
 It fetches the Hyperkitty API from the `hyperkitty-base-url'
 variable and let's user choose one of the mailing list and then
 opens a new buffer with a list of threads for that MailingList."
@@ -122,7 +115,6 @@ opens a new buffer with a list of threads for that MailingList."
 
 (defvar hyperkitty-page-size 25
   "Page size for Hyperkitty's pagination.
-
 This affects how is this package able to recoginize if there are
 more threads and print the [More Threads] button.")
 
@@ -135,7 +127,6 @@ more threads and print the [More Threads] button.")
 
 (define-derived-mode hyperkitty-threads-mode tabulated-list-mode "hyperkitty-threads-mode"
   "Major mode for MailingList threads.
-
 It presents a list of threads in a tabular format with three
 columns, Subject, Reply and Last Active date.
 "
@@ -157,7 +148,6 @@ columns, Subject, Reply and Last Active date.
 
 (defun hyperkitty--print-threads-table (mlist base-url response)
   "Print the whole threads table for a given MailingList.
-
 Create a new buffer, named after the MailingList and switch to
 `hyperkitty-threads-mode'.  Finally, display all the threads from the RESPONSE.
 Argument MLIST Posting address for the MailingList.
@@ -175,7 +165,6 @@ Argument RESPONSE HTTP response for MLIST's threads."
 
 (defun hyperkitty--get-threads-response (response)
   "Given a HTTP RESPONSE, return a list that tablulated-list-mode.
-
 It expects data in the form of:
 \(<thread-url> [(<subject> <date>)
                (<subject2> <date2>)
@@ -195,7 +184,6 @@ Argument RESPONSE HTTP json response to get threads from."
 (defun hyperkitty--get-threads-response-with-more-button (response)
   "Get the list of threads from the response.
 Also, add a [More Threads] button in the last line.
-
 Argument RESPONSE HTTP json response for threads."
   (let ((threads (hyperkitty--get-threads-response response)))
     (message (format "Length of threads is: %s and page-size is: %s" (length threads) hyperkitty-page-size))
@@ -243,7 +231,6 @@ Argument RESPONSE for the json response for more threads."
 
 (defun hyperkitty--print-emails-response (subject response)
   "Print all the Emails of a thread in a new Buffer.
-
 Create a new buffer, named after the SUBJECT of the email and
 print all the emails in that new buffer.  Each Email's content is
 fetched individual since the entries only contain the metadata
@@ -264,7 +251,6 @@ Argument RESPONSE HTTP response to print in the current buffer."
 
 (defun hyperkitty--print-email (email)
   "Fetch and print a single EMAIL to the current buffer.
-
 Given a metadata object for Email, fetch the actual contents of
 the Email and print it to the current buffer."
   (hyperkitty--get-json
@@ -304,8 +290,7 @@ the Email and print it to the current buffer."
 
 
 (defun hyperkitty--attachments (url _button)
-  "Hyperkitty fetch the attachments.
-
+  "Fetch the attachments in a browser.
 This exists as a separate function so that we can use
 `apply-partially' to create a function that acts like a click
 handler.  Using this in a lambda function would evaluate it before
@@ -342,7 +327,6 @@ Argument BUTTON Button object for this handler."
 ;; url stuff.
 (defun hyperkitty-lists-url (base-url)
   "Get a list of all MailingLists from API.
-
 Currently, this does not handle pagination and simply returns the
 default URL without pagination.
 Argument BASE-URL Base URL for Hyperkitty instnace."
@@ -350,7 +334,6 @@ Argument BASE-URL Base URL for Hyperkitty instnace."
 
 (defun hyperkitty-threads-url (base-url mlist &optional page)
   "Get a list of all threads for a MailingList.
-
 Currently, this does not handle pagination and simply returns the
 default URL without pagination.
 Argument BASE-URL Base URL for hyperkitty instance.
@@ -363,7 +346,6 @@ Optional argument PAGE The page number for the paginated response."
 
 (defun hyperkitty-thread-emails-url (threads-url)
   "Get all emails for the given thread URL.
-
 This does not handle pagination currently.
 Argument THREADS-URL URL to the current thread."
   (concat threads-url "/emails"))
