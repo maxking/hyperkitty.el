@@ -30,6 +30,7 @@
 
 (require 'cl-lib)
 (require 'request)
+(require 'outline)
 
 (setf debug-on-error t)
 (setf lexical-binding t)
@@ -148,6 +149,15 @@ columns, Subject, Reply and Last Active date.
   (tabulated-list-init-header))
 
 
+(defvar hyperkitty-page-num nil
+  "Current page number in the threads page.")
+
+(defvar hyperkitty-current-mlist nil
+  "Current mailinglist in the threads page.")
+
+(defvar hyperkitty-base-url nil
+  "Base URL of Hyperkitty hosting the `current-mmlist' mailinglist.")
+
 (defun hyperkitty--print-threads-table (mlist base-url response)
   "Print the whole threads table for a given MailingList.
 
@@ -159,13 +169,13 @@ Argument RESPONSE HTTP response for MLIST's threads."
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
   (hyperkitty-threads-mode)
-  (make-local-variable 'page-num)
-  (make-local-variable 'current-mlist)
+  (make-local-variable 'hyperkitty-page-num)
+  (make-local-variable 'hyperkitty-current-mlist)
   (make-local-variable 'hyperkitty-base-url)
-  (setq page-num 1)
-  (setq current-mlist mlist)
+  (setq hyperkitty-page-num 1)
+  (setq hyperkitty-current-mlist mlist)
   (setq hyperkitty-base-url base-url)
-  (setq tabulated-list-entries (get-threads-response-with-more-button response))
+  (setq tabulated-list-entries (hyperkitty--get-threads-response-with-more-button response))
   (tabulated-list-print t))
 
 
@@ -207,11 +217,11 @@ Argument RESPONSE HTTP json response for threads."
       threads)))
 
 
-(defun hyperkitty--button-fetch-more-threads (button)
+(defun hyperkitty--button-fetch-more-threads (_)
   "Get more threads for the current thread.
 Argument BUTTON The button which this is a handler for."
-  (setq page-num (+ page-num 1))
-  (let ((threads-url (hyperkitty-threads-url hyperkitty-base-url current-mlist page-num)))
+  (setq hyperkitty-page-num (+ hyperkitty-page-num 1))
+  (let ((threads-url (hyperkitty-threads-url hyperkitty-base-url hyperkitty-current-mlist hyperkitty-page-num)))
     (hyperkitty--get-json threads-url 'update-threads)))
 
 
@@ -247,7 +257,7 @@ about the Email.
 Argument RESPONSE HTTP response to print in the current buffer."
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
-  (thread-emails-mode)
+  (hyperkitty-thread-emails-mode)
   (read-only-mode)
   (setq outline-regexp "From: ")
   (let ((inhibit-read-only t))
@@ -300,7 +310,7 @@ the Email and print it to the current buffer."
           (insert "\n")))))
 
 
-(defun hyperkitty--attachments (url button)
+(defun hyperkitty--attachments (url _)
   "Hyperkitty fetch the attachments.
 
 This exists as a separate function so that we can use
