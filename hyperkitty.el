@@ -75,7 +75,7 @@ the list of MailingList."
     (insert (format "URL: %s, Status: %s, Data: %s"
                     (request-response-url response)
                     (request-response-status-code response)
-                    (dolist #'hyperkitty--print-mailinglist (hyperkitty--get-response-entries response))))))
+                    (mapcar 'hyperkitty--print-mailinglist (hyperkitty--get-response-entries response))))))
 
 
 (defun hyperkitty--print-mailinglist (mlist)
