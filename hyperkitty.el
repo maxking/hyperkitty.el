@@ -166,8 +166,6 @@ Argument RESPONSE HTTP response for MLIST's threads."
   (interactive)
   (pop-to-buffer (format "*%s*" mlist) nil)
   (hyperkitty-threads-mode)
-  (dolist (var '(hyperkitty-page-num hyperkitty-current-mlist hyperkitty-base-url))
-    (make-local-variable var))
   (setq hyperkitty-page-num 1
         hyperkitty-current-mlist mlist
         hyperkitty-base-url base-url
