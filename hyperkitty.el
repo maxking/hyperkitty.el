@@ -80,7 +80,7 @@ the list of MailingList."
     (insert (format "URL: %s, Status: %s, Data: %s"
                     (request-response-url response)
                     (request-response-status-code response)
-                    (mapcar 'print-mailinglist (hyperkitty--get-response-entries response))))))
+                    (mapcar #'hyperkitty--print-mailinglist (hyperkitty--get-response-entries response))))))
 
 
 (defun hyperkitty--print-mailinglist (mlist)
@@ -211,18 +211,18 @@ Argument RESPONSE HTTP json response for threads."
                (vector
                 (cons
                  "[More Threads]"
-                 (list 'action 'button-fetch-more-threads
+                 (list 'action #'hyperkitty--button-fetch-more-threads
                        'type 'hyperkitty-more-threads-button )) "" ""))
          threads)
       threads)))
 
 
-(defun hyperkitty--button-fetch-more-threads (_)
+(defun hyperkitty--button-fetch-more-threads (_button)
   "Get more threads for the current thread.
 Argument BUTTON The button which this is a handler for."
-  (setq hyperkitty-page-num (+ hyperkitty-page-num 1))
+  (setq hyperkitty-page-num (1+ hyperkitty-page-num))
   (let ((threads-url (hyperkitty-threads-url hyperkitty-base-url hyperkitty-current-mlist hyperkitty-page-num)))
-    (hyperkitty--get-json threads-url 'update-threads)))
+    (hyperkitty--get-json threads-url #'hyperkitty--update-threads)))
 
 
 (defun hyperkitty--update-threads (response)
@@ -233,7 +233,7 @@ Argument RESPONSE for the json response for more threads."
 
 
 (define-button-type 'hyperkitty-more-threads-button
-  'action 'hyperkitty--button-fetch-more-threads
+  'action #'hyperkitty--button-fetch-more-threads
   'follow-link t
   'help-echo "Fetch More threads"
   'help-args "Get more threads.")
@@ -244,7 +244,7 @@ Argument RESPONSE for the json response for more threads."
   (interactive)
   (hyperkitty--get-json
    (hyperkitty-thread-emails-url (tabulated-list-get-id))
-   (apply-partially 'hyperkitty--print-emails-response (elt (tabulated-list-get-entry) 0))))
+   (apply-partially #'hyperkitty--print-emails-response (elt (tabulated-list-get-entry) 0))))
 
 
 (defun hyperkitty--print-emails-response (subject response)
@@ -261,11 +261,11 @@ Argument RESPONSE HTTP response to print in the current buffer."
   (read-only-mode)
   (setq outline-regexp "From: ")
   (let ((inhibit-read-only t))
-        (insert (propertize
-                 (format "%s\n" subject)
-                 'font-lock-face 'bold
-                 'height 200)))
-  (mapcar 'print-email (reverse (hyperkitty--get-response-entries response))))
+    (insert (propertize
+             (format "%s\n" subject)
+             'font-lock-face 'bold
+             'height 200)))
+  (mapcar #'hyperkitty--print-email (reverse (hyperkitty--get-response-entries response))))
 
 
 (defun hyperkitty--print-email (email)
@@ -297,20 +297,19 @@ the Email and print it to the current buffer."
 (defun hyperkitty--maybe-print-email-attachments (anemail)
   "If ANEMAIL has attachments, print them as clickable text."
   (let ((attachments (assoc-default 'attachments anemail)))
-    (if (> (length attachments) 0)
-        (progn
+    (when (> (length attachments) 0)
           (insert "Attachments: ")
-           (mapc
-            (lambda (arg)
-              (insert-button
-               (format "%s(%sKB)" (assoc-default 'name arg) (assoc-default 'size arg))
-               'action (apply-partially 'hyperkitty--attachments (assoc-default 'download arg)))
-              (insert " "))
-            attachments)
-          (insert "\n")))))
+          (mapc
+           (lambda (arg)
+             (insert-button
+              (format "%s(%sKB)" (assoc-default 'name arg) (assoc-default 'size arg))
+              'action (apply-partially #'hyperkitty--attachments (assoc-default 'download arg)))
+             (insert " "))
+           attachments)
+          (insert "\n"))))
 
 
-(defun hyperkitty--attachments (url _)
+(defun hyperkitty--attachments (url _button)
   "Hyperkitty fetch the attachments.
 
 This exists as a separate function so that we can use
