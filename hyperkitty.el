@@ -307,7 +307,7 @@ Argument BUTTON Button object for this handler."
 
 (define-derived-mode hyperkitty-thread-emails-mode outline-mode "hyperkitty-thread-emails-mode"
   "Minor mode to simulate buffer local keybindings."
-  (setq font-lock-defaults '(email-highlights)))
+  (setq font-lock-defaults '(hyperkitty-email-highlights)))
 
 
 (defun hyperkitty-outline-toggle ()
@@ -325,9 +325,10 @@ Argument BUTTON Button object for this handler."
     map)
   "Keymap for 'hyperkitty-thread-emails-mode'.")
 
-(setq email-highlights
-      '(("From:\\|Date:\\|Subject:\\|Message-ID:\\|Attachments:" . font-lock-keyword-face)
-        (">.*" . font-lock-comment-face)))
+(defvar hyperkitty-email-highlights
+  '(("From:\\|Date:\\|Subject:\\|Message-ID:\\|Attachments:" . font-lock-keyword-face)
+    (">.*" . font-lock-comment-face))
+  "Regex to highlight words in email headers.")
 
 ;; url stuff.
 (defun hyperkitty-lists-url (base-url)
