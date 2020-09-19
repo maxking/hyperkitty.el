@@ -3,12 +3,16 @@
 ;; Copyright (c) 2020 Abhilash Raj
 ;;
 ;; Author: Abhilash Raj <maxking@asynchronous.in>
-;; URL: http://github.com/maxking/hyperkitty.el
+;; URL: https://github.com/maxking/hyperkitty.el
 ;; Version: 0.0.1
 ;; Keywords: mail hyperkitty mailman
 ;; Package-Requires: ((request "0.3.2") (emacs "25.1"))
 ;; Prefix: hyperkitty
 ;; Separator: -
+
+;; SPDX-License-Identifier: Apache-2.0
+
+;;; License: Apache-2.0
 
 
 ;;; Commentary:
@@ -75,7 +79,7 @@ the list of MailingList."
     (insert (format "URL: %s, Status: %s, Data: %s"
                     (request-response-url response)
                     (request-response-status-code response)
-                    (mapcar 'hyperkitty--print-mailinglist (hyperkitty--get-response-entries response))))))
+                    (mapcar #'hyperkitty--print-mailinglist (hyperkitty--get-response-entries response))))))
 
 
 (defun hyperkitty--print-mailinglist (mlist)
@@ -119,10 +123,10 @@ This affects how is this package able to recoginize if there are
 more threads and print the [More Threads] button.")
 
 ;; Keyboard map for hyperkitty-threads-mode.
-(defvar hyperkitty-threads-mode-map nil "Keymap for 'hyperkitty-threads-mode-map'.")
-(progn
-  (setq hyperkitty-threads-mode-map (make-sparse-keymap))
-  (define-key hyperkitty-threads-mode-map (kbd "<RET>") #'hyperkitty--get-thread-emails))
+(defvar hyperkitty-threads-mode-map
+  (let (map (make-sparse-keymap))
+    (define-key hyperkitty-threads-mode-map (kbd "<RET>") #'hyperkitty--get-thread-emails))
+  "Keymap for 'hyperkitty-threads-mode-map'")
 
 
 (define-derived-mode hyperkitty-threads-mode tabulated-list-mode "hyperkitty-threads-mode"
@@ -186,7 +190,7 @@ Argument RESPONSE HTTP json response to get threads from."
 Also, add a [More Threads] button in the last line.
 Argument RESPONSE HTTP json response for threads."
   (let ((threads (hyperkitty--get-threads-response response)))
-    (message (format "Length of threads is: %s and page-size is: %s" (length threads) hyperkitty-page-size))
+    (message "Length of threads is: %s and page-size is: %s" (length threads) hyperkitty-page-size)
     (if (= (length threads) hyperkitty-page-size)
         (cons
          (list "more-threads"
@@ -312,13 +316,12 @@ Argument BUTTON Button object for this handler."
       (outline-show-entry)
     (outline-hide-entry)))
 
-(defvar hyperkitty-thread-emails-mode-map nil "Keymap for 'hyperkitty-thread-emails-mode'.")
-(progn
-  (setq hyperkitty-thread-emails-mode-map (make-sparse-keymap))
-  (define-key hyperkitty-thread-emails-mode-map (kbd "<RET>") #'hyperkitty-outline-toggle)
-  (define-key hyperkitty-thread-emails-mode-map (kbd "TAB") #'hyperkitty-outline-toggle)
-  (define-key hyperkitty-thread-emails-mode-map (kbd "q") #'kill-buffer-and-window))
-
+(defvar hyperkitty-thread-emails-mode-map
+  (let (map (make-sparse-keymap))
+    (define-key map (kbd "<RET>") #'hyperkitty-outline-toggle)
+    (define-key map (kbd "TAB") #'hyperkitty-outline-toggle)
+    (define-key map (kbd "q") #'kill-buffer-and-window))
+  "Keymap for 'hyperkitty-thread-emails-mode'.")
 
 (setq email-highlights
       '(("From:\\|Date:\\|Subject:\\|Message-ID:\\|Attachments:" . font-lock-keyword-face)
@@ -353,7 +356,7 @@ Argument THREADS-URL URL to the current thread."
 
 (defun hyperkitty-get-base-url ()
   "Prompt User to get the base URL for hyperkitty."
-  (read-string "Enter Hyperkitty URL:"))
+  (read-string "Enter Hyperkitty URL: "))
 
 
 (provide 'hyperkitty)
