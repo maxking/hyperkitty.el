@@ -325,9 +325,10 @@ Argument BUTTON Button object for this handler."
     map)
   "Keymap for 'hyperkitty-thread-emails-mode'.")
 
-(setq email-highlights
-      '(("From:\\|Date:\\|Subject:\\|Message-ID:\\|Attachments:" . font-lock-keyword-face)
-        (">.*" . font-lock-comment-face)))
+(defvar email-highlights
+  '(("From:\\|Date:\\|Subject:\\|Message-ID:\\|Attachments:" . font-lock-keyword-face)
+    (">.*" . font-lock-comment-face))
+  "Regex to highlight words in email headers.")
 
 ;; url stuff.
 (defun hyperkitty-lists-url (base-url)
