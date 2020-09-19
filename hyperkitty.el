@@ -124,8 +124,9 @@ more threads and print the [More Threads] button.")
 
 ;; Keyboard map for hyperkitty-threads-mode.
 (defvar hyperkitty-threads-mode-map
-  (let (map (make-sparse-keymap))
-    (define-key hyperkitty-threads-mode-map (kbd "<RET>") #'hyperkitty--get-thread-emails))
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "<RET>") #'hyperkitty--get-thread-emails)
+    map)
   "Keymap for 'hyperkitty-threads-mode-map'")
 
 
@@ -317,10 +318,11 @@ Argument BUTTON Button object for this handler."
     (outline-hide-entry)))
 
 (defvar hyperkitty-thread-emails-mode-map
-  (let (map (make-sparse-keymap))
+  (let ((map (make-sparse-keymap)))
     (define-key map (kbd "<RET>") #'hyperkitty-outline-toggle)
     (define-key map (kbd "TAB") #'hyperkitty-outline-toggle)
-    (define-key map (kbd "q") #'kill-buffer-and-window))
+    (define-key map (kbd "q") #'kill-buffer-and-window)
+    map)
   "Keymap for 'hyperkitty-thread-emails-mode'.")
 
 (setq email-highlights
