@@ -26,7 +26,7 @@
 ;;
 ;;     (setq
 ;;        hyperkitty-mlists
-;;        ((cons \"test@mailman3.org\" \"https://lists.mailman3.org/archives\")))
+;;        ((cons "test@mailman3.org" "https://lists.mailman3.org/archives")))
 ;;
 ;; Then, you can simply use `M-x hyperkitty' to start using.
 
@@ -322,7 +322,7 @@ Argument BUTTON Button object for this handler."
     (define-key map (kbd "<RET>") #'hyperkitty-outline-toggle)
     (define-key map (kbd "TAB") #'hyperkitty-outline-toggle)
     (define-key map (kbd "q") #'kill-buffer-and-window)
-    map)
+    map)fsa
   "Keymap for 'hyperkitty-thread-emails-mode'.")
 
 (defvar hyperkitty-email-highlights
