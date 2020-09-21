@@ -11,7 +11,7 @@ Currently, this is a WIP and can only fetch and list emails in a new buffer.
 
 In order to use this, you can install it from [[https://melpa.org/#/hyperkitty][Melpa]]:
 
-#+begin_src bash
+#+begin_src
 M-x package-install RET hyperkitty
 #+end_src
 
