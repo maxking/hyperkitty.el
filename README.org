@@ -1,6 +1,6 @@
 * hyperkitty.el
 
-[![MELPA](https://melpa.org/packages/hyperkitty-badge.svg)](https://melpa.org/#/hyperkitty)
+[[https://melpa.org/#/hyperkitty][file:https://melpa.org/packages/hyperkitty-badge.svg]]
 
 An emacs package for reading public mailing list archives hosted via
 [[https://hyperkitty.readthedocs.io][Hyperkitty]].
