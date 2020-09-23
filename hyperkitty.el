@@ -26,7 +26,7 @@
 ;;
 ;;     (setq
 ;;        hyperkitty-mlists
-;;        ((cons \"test@mailman3.org\" \"https://lists.mailman3.org/archives\")))
+;;        ((cons "test@mailman3.org" "https://lists.mailman3.org/archives")))
 ;;
 ;; Then, you can simply use `M-x hyperkitty' to start using.
 

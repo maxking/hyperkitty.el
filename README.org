@@ -1,5 +1,7 @@
 * hyperkitty.el
 
+[![MELPA](https://melpa.org/packages/hyperkitty-badge.svg)](https://melpa.org/#/hyperkitty)
+
 An emacs package for reading public mailing list archives hosted via
 [[https://hyperkitty.readthedocs.io][Hyperkitty]].
 
@@ -7,25 +9,21 @@ Currently, this is a WIP and can only fetch and list emails in a new buffer.
 
 * Usage
 
-In order to use this library, first install it by cloning the git repo:
+In order to use this, you can install it from [[https://melpa.org/#/hyperkitty][Melpa]]:
 
-#+begin_src bash
-$ git clone https://github.com/maxking/hyperkitty.el
+#+begin_src
+M-x package-install RET hyperkitty
 #+end_src
 
-Then, add the clone directory to the ~load-path~:
+If you aren't using MELPA repository already, you can do so by adding the
+following to your Emacs's init file:
 
-#+begin_src emacs-lisp
-(add-to-list 'load-path "/path/to/hyperkitty.el")
+#+begin_src elisp
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 #+end_src
 
-There are a couple of dependencies that you'd need to install before using the
-package (I haven't figured out packaging yet!). You need to install:
-
-- [[https://github.com/tkf/emacs-request][emacs-request]]
-- [[https://www.masteringemacs.org/article/introduction-to-ido-mode][ido-mode]]
-
-After that, add this to your emacs init file:
+After that, add this to your emacs init file to choose MailingLists:
 
 #+begin_src emacs-lisp
 (require 'hyperkitty)
