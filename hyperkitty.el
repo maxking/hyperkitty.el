@@ -107,6 +107,7 @@ Argument MLIST the mailinglist object from the API to print."
     (hyperkitty--get-json threads-url (apply-partially #'hyperkitty--print-threads-table mlist base-url))))
 
 
+;;;###autoload
 (defun hyperkitty ()
   "This is the primary entrypoint to hyperkitty.el.
 It fetches the Hyperkitty API from the `hyperkitty-base-url'
@@ -360,6 +361,9 @@ Argument THREADS-URL URL to the current thread."
 (defun hyperkitty-get-base-url ()
   "Prompt User to get the base URL for hyperkitty."
   (read-string "Enter Hyperkitty URL: "))
+
+
+;; caching utilities.
 
 
 (provide 'hyperkitty)
