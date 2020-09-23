@@ -322,7 +322,7 @@ Argument BUTTON Button object for this handler."
     (define-key map (kbd "<RET>") #'hyperkitty-outline-toggle)
     (define-key map (kbd "TAB") #'hyperkitty-outline-toggle)
     (define-key map (kbd "q") #'kill-buffer-and-window)
-    map)fsa
+    map)
   "Keymap for 'hyperkitty-thread-emails-mode'.")
 
 (defvar hyperkitty-email-highlights
