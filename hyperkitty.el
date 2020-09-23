@@ -244,8 +244,8 @@ about the Email.
 Argument RESPONSE HTTP response to print in the current buffer."
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
-  (hyperkitty-thread-emails-mode)
   (read-only-mode)
+  (hyperkitty-emails-mode)
   (setq outline-regexp "From: ")
   (let ((inhibit-read-only t))
     (insert (propertize
@@ -306,7 +306,15 @@ Argument BUTTON Button object for this handler."
   (browse-url url))
 
 
-(define-derived-mode hyperkitty-thread-emails-mode outline-mode "hyperkitty-thread-emails-mode"
+(defvar hyperkitty-emails-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "<RET>") #'hyperkitty-outline-toggle)
+    (define-key map (kbd "TAB") #'hyperkitty-outline-toggle)
+    (define-key map (kbd "q") #'kill-buffer-and-window)
+	map)
+  "Keymap for 'hyperkitty-thread-emails-mode'.")
+
+(define-derived-mode hyperkitty-emails-mode outline-mode "hyperkitty-emails-mode"
   "Minor mode to simulate buffer local keybindings."
   (setq font-lock-defaults '(hyperkitty-email-highlights)))
 
@@ -318,13 +326,6 @@ Argument BUTTON Button object for this handler."
       (outline-show-entry)
     (outline-hide-entry)))
 
-(defvar hyperkitty-thread-emails-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "<RET>") #'hyperkitty-outline-toggle)
-    (define-key map (kbd "TAB") #'hyperkitty-outline-toggle)
-    (define-key map (kbd "q") #'kill-buffer-and-window)
-    map)
-  "Keymap for 'hyperkitty-thread-emails-mode'.")
 
 (defvar hyperkitty-email-highlights
   '(("From:\\|Date:\\|Subject:\\|Message-ID:\\|Attachments:" . font-lock-keyword-face)
