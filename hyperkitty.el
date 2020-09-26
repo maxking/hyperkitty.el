@@ -128,7 +128,7 @@ more threads and print the [More Threads] button.")
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "<RET>") #'hyperkitty--get-thread-emails)
     map)
-  "Keymap for 'hyperkitty-threads-mode-map'")
+  "Keymap for 'hyperkitty-threads-mode-map'.")
 
 
 (define-derived-mode hyperkitty-threads-mode tabulated-list-mode "hyperkitty-threads-mode"
@@ -244,7 +244,8 @@ Create a new buffer, named after the SUBJECT of the email and
 print all the emails in that new buffer.  Each Email's content is
 fetched individual since the entries only contain the metadata
 about the Email.
-Argument RESPONSE HTTP response to print in the current buffer."
+Argument RESPONSE HTTP response to print in the current buffer.
+Argument THREADS-URL API url for the current thread."
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
   (read-only-mode)
@@ -369,6 +370,7 @@ Argument BUTTON Button object for this handler."
 
 
 (defun hyperkitty-get-weburl-from-apiurl (apiurl)
+  "Convert the `APIURL' to web url for HTML page to open in browser."
   (replace-regexp-in-string "/api/" "/" apiurl))
 
 
