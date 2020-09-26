@@ -44,3 +44,4 @@ Then, you need to only start using by running ~M-x hyperkitty~.
 ** Thread view
 - ~RET~, ~TAB~: Toggle expand and collapse the email at cursor.
 - ~q~: Quit the current buffer.
+- ~o~: Open the current thread in a browser.
