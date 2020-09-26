@@ -235,7 +235,7 @@ Argument RESPONSE for the json response for more threads."
   (hyperkitty--get-json
    (hyperkitty-thread-emails-url (tabulated-list-get-id))
    (apply-partially
-	#'hyperkitty--print-emails-response (elt (tabulated-list-get-entry) 0) (tabulated-list-get-id))))
+    #'hyperkitty--print-emails-response (elt (tabulated-list-get-entry) 0) (tabulated-list-get-id))))
 
 
 (defun hyperkitty--print-emails-response (subject threads-url response)
@@ -251,7 +251,7 @@ Argument THREADS-URL API url for the current thread."
   (read-only-mode)
   (hyperkitty-emails-mode)
   (setq outline-regexp "From: "
-		hyperkitty-current-threadurl threads-url)
+        hyperkitty-current-threadurl threads-url)
   (let ((inhibit-read-only t))
     (insert (propertize
              (format "%s\n" subject)
@@ -347,7 +347,7 @@ Argument BUTTON Button object for this handler."
     (define-key map (kbd "<RET>") #'hyperkitty-outline-toggle)
     (define-key map (kbd "TAB") #'hyperkitty-outline-toggle)
     (define-key map (kbd "q") #'kill-buffer-and-window)
-	(define-key map (kbd "o") #'hyperkitty-open-thread-in-browser)
+    (define-key map (kbd "o") #'hyperkitty-open-thread-in-browser)
     map)
   "Keymap for 'hyperkitty-thread-emails-mode'.")
 
