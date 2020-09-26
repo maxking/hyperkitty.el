@@ -219,7 +219,6 @@ Argument RESPONSE for the json response for more threads."
   (setq tabulated-list-entries (append tabulated-list-entries (hyperkitty--get-threads-response response)))
   (tabulated-list-print t))
 
-
 (define-button-type 'hyperkitty-more-threads-button
   'action #'hyperkitty--button-fetch-more-threads
   'follow-link t
@@ -266,8 +265,40 @@ the Email and print it to the current buffer."
            (inhibit-read-only t))
        (insert (hyperkitty--print-email-headers anemail))
        (hyperkitty--maybe-print-email-attachments anemail)
+	   (hyperkitty--reply-button email)
+	   ;; Insert some space between the two buttons.
+	   (insert "    ")
+	   (hyperkitty--open-browser-button email)
        (insert (format "\n%s\n\n" (assoc-default 'content anemail))))
      (outline-hide-entry))))
+
+
+(defun hyperkitty--reply-button (email)
+  "Print a reply button with mailto: link for the `EMAIL'."
+  (insert-button
+   "[Reply]"
+   'action (apply-partially
+			#'hyperkitty--attachments
+			(format "mailto:%s?subject=%s&In-Reply-To=<%s>"
+					hyperkitty-current-mlist
+					(assoc-default 'subject email)
+					(assoc-default 'message_id email)))))
+
+
+(defun hyperkitty--open-browser-button (email)
+  "Print a reply button with mailto: link for the `EMAIL'."
+  (insert-button
+   "[Open in browser]"
+   'action (apply-partially
+			#'hyperkitty--open-message email)))
+
+
+(defun hyperkitty--open-message (email _button)
+  "Open the `EMAIL' in browser."
+  (browse-url (format "%s/list/%s/message/%s"
+					  hyperkitty-base-url
+					  hyperkitty-current-mlist
+					  (assoc-default 'message_id_hash email))))
 
 
 (defun hyperkitty--print-email-headers (anemail)
