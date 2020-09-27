@@ -128,7 +128,7 @@ more threads and print the [More Threads] button.")
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "<RET>") #'hyperkitty--get-thread-emails)
     map)
-  "Keymap for 'hyperkitty-threads-mode-map'")
+  "Keymap for 'hyperkitty-threads-mode-map'.")
 
 
 (define-derived-mode hyperkitty-threads-mode tabulated-list-mode "hyperkitty-threads-mode"
@@ -148,6 +148,9 @@ columns, Subject, Reply and Last Active date.
 
 (defvar hyperkitty-current-mlist nil
   "Current mailinglist in the threads page.")
+
+(defvar hyperkitty-current-threadurl nil
+  "Thread id of the current thread.")
 
 (defvar hyperkitty-base-url nil
   "Base URL of Hyperkitty hosting the `current-mmlist' mailinglist.")
@@ -231,28 +234,30 @@ Argument RESPONSE for the json response for more threads."
   (interactive)
   (hyperkitty--get-json
    (hyperkitty-thread-emails-url (tabulated-list-get-id))
-   (apply-partially #'hyperkitty--print-emails-response (elt (tabulated-list-get-entry) 0))))
+   (apply-partially
+    #'hyperkitty--print-emails-response (elt (tabulated-list-get-entry) 0) (tabulated-list-get-id))))
 
 
-(defun hyperkitty--print-emails-response (subject response)
+(defun hyperkitty--print-emails-response (subject threads-url response)
   "Print all the Emails of a thread in a new Buffer.
 Create a new buffer, named after the SUBJECT of the email and
 print all the emails in that new buffer.  Each Email's content is
 fetched individual since the entries only contain the metadata
 about the Email.
-Argument RESPONSE HTTP response to print in the current buffer."
+Argument RESPONSE HTTP response to print in the current buffer.
+Argument THREADS-URL API url for the current thread."
   (pop-to-buffer (format "*%s*" subject))
   (erase-buffer)
   (read-only-mode)
   (hyperkitty-emails-mode)
-  (setq outline-regexp "From: ")
+  (setq outline-regexp "From: "
+        hyperkitty-current-threadurl threads-url)
   (let ((inhibit-read-only t))
     (insert (propertize
              (format "%s\n" subject)
              'font-lock-face 'bold
              'height 200)))
   (mapcar #'hyperkitty--print-email (reverse (hyperkitty--get-response-entries response))))
-
 
 (defun hyperkitty--print-email (email)
   "Fetch and print a single EMAIL to the current buffer.
@@ -342,6 +347,7 @@ Argument BUTTON Button object for this handler."
     (define-key map (kbd "<RET>") #'hyperkitty-outline-toggle)
     (define-key map (kbd "TAB") #'hyperkitty-outline-toggle)
     (define-key map (kbd "q") #'kill-buffer-and-window)
+    (define-key map (kbd "o") #'hyperkitty-open-thread-in-browser)
     map)
   "Keymap for 'hyperkitty-thread-emails-mode'.")
 
@@ -356,6 +362,16 @@ Argument BUTTON Button object for this handler."
   (if (outline-invisible-p (line-end-position))
       (outline-show-entry)
     (outline-hide-entry)))
+
+(defun hyperkitty-open-thread-in-browser ()
+  "Open the current thread in browser."
+  (interactive)
+  (browse-url (hyperkitty-get-weburl-from-apiurl hyperkitty-current-threadurl)))
+
+
+(defun hyperkitty-get-weburl-from-apiurl (apiurl)
+  "Convert the `APIURL' to web url for HTML page to open in browser."
+  (replace-regexp-in-string "/api/" "/" apiurl))
 
 
 (defvar hyperkitty-email-highlights
