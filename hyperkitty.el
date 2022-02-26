@@ -1,6 +1,6 @@
 ;;; hyperkitty.el --- Emacs interface for Hyperkitty archives -*- lexical-binding: t; -*-
 
-;; Copyright (c) 2020 Abhilash Raj
+;; Copyright (c) 2020-2022 Abhilash Raj
 ;;
 ;; Author: Abhilash Raj <maxking@asynchronous.in>
 ;; URL: https://github.com/maxking/hyperkitty.el
